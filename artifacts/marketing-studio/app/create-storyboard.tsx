@@ -16,7 +16,7 @@ import * as Haptics from "expo-haptics";
 
 import Colors from "@/constants/colors";
 import { fonts, spacing, radius } from "@/constants/theme";
-import { createStoryboard } from "@/lib/api";
+import { createStoryboard, aiGenerateStoryboard, aiGenerateAdCreative } from "@/lib/api";
 
 const c = Colors.light;
 
@@ -29,6 +29,7 @@ interface Scene {
 }
 
 const SHOT_TYPES = ["Wide", "Medium", "Close-up", "POV", "B-Roll", "Text Overlay"];
+const SCENE_COUNTS = [3, 4, 5, 6, 8];
 
 function generateId() {
   return Date.now().toString() + Math.random().toString(36).substr(2, 9);
@@ -46,6 +47,10 @@ export default function CreateStoryboardScreen() {
   const [cta, setCta] = useState("");
   const [audience, setAudience] = useState("");
 
+  const [aiTopic, setAiTopic] = useState("");
+  const [aiSceneCount, setAiSceneCount] = useState(5);
+  const [aiError, setAiError] = useState("");
+
   const isAd = type === "ad-creative";
 
   const saveMutation = useMutation({
@@ -61,6 +66,65 @@ export default function CreateStoryboardScreen() {
       router.back();
     },
   });
+
+  const aiStoryboardMutation = useMutation({
+    mutationFn: () =>
+      aiGenerateStoryboard({ topic: aiTopic, sceneCount: aiSceneCount }),
+    onSuccess: (data: { title: string; scenes: Array<{ title: string; description: string; shotType: string; duration: string }> }) => {
+      if (!data.scenes || data.scenes.length === 0) {
+        setAiError("AI generation returned no content. Please try a different description.");
+        return;
+      }
+      setAiError("");
+      if (data.title && !title) setTitle(data.title);
+      setScenes(
+        data.scenes.map((s) => ({
+          id: generateId(),
+          title: s.title || "",
+          description: s.description || "",
+          shotType: SHOT_TYPES.includes(s.shotType) ? s.shotType : "Medium",
+          duration: s.duration || "3s",
+        }))
+      );
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    },
+    onError: () => {
+      setAiError("Failed to generate storyboard. Please try again.");
+    },
+  });
+
+  const aiAdMutation = useMutation({
+    mutationFn: () =>
+      aiGenerateAdCreative({ description: aiTopic }),
+    onSuccess: (data: { title: string; hook: string; headline: string; body: string; cta: string; audience: string }) => {
+      if (!data.hook && !data.headline && !data.body) {
+        setAiError("AI generation returned no content. Please try a different description.");
+        return;
+      }
+      setAiError("");
+      if (data.title && !title) setTitle(data.title);
+      if (data.hook) setHook(data.hook);
+      if (data.headline) setHeadline(data.headline);
+      if (data.body) setAdBody(data.body);
+      if (data.cta) setCta(data.cta);
+      if (data.audience) setAudience(data.audience);
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    },
+    onError: () => {
+      setAiError("Failed to generate ad creative. Please try again.");
+    },
+  });
+
+  const aiIsPending = aiStoryboardMutation.isPending || aiAdMutation.isPending;
+
+  const handleAiGenerate = () => {
+    setAiError("");
+    if (isAd) {
+      aiAdMutation.mutate();
+    } else {
+      aiStoryboardMutation.mutate();
+    }
+  };
 
   const addScene = () => {
     setScenes((prev) => [
@@ -123,6 +187,70 @@ export default function CreateStoryboardScreen() {
         <Text style={styles.typeChipText}>
           {isAd ? "Ad Creative" : "Storyboard"}
         </Text>
+      </View>
+
+      <View style={styles.aiSection}>
+        <View style={styles.aiHeader}>
+          <MaterialCommunityIcons name="robot-outline" size={18} color={c.tint} />
+          <Text style={styles.aiTitle}>AI Generate</Text>
+        </View>
+        <TextInput
+          style={styles.input}
+          placeholder={isAd ? "Describe your product or service..." : "Describe your video concept..."}
+          placeholderTextColor={c.textMuted}
+          value={aiTopic}
+          onChangeText={setAiTopic}
+          multiline
+          textAlignVertical="top"
+        />
+        {!isAd && (
+          <>
+            <Text style={styles.aiLabel}>Number of Scenes</Text>
+            <View style={styles.sceneCountRow}>
+              {SCENE_COUNTS.map((count) => (
+                <Pressable
+                  key={count}
+                  style={[
+                    styles.sceneCountChip,
+                    aiSceneCount === count && styles.sceneCountChipActive,
+                  ]}
+                  onPress={() => setAiSceneCount(count)}
+                >
+                  <Text
+                    style={[
+                      styles.sceneCountChipText,
+                      aiSceneCount === count && styles.sceneCountChipTextActive,
+                    ]}
+                  >
+                    {count}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </>
+        )}
+        {aiError !== "" && (
+          <Text style={styles.aiErrorText}>{aiError}</Text>
+        )}
+        <Pressable
+          style={({ pressed }) => [
+            styles.aiButton,
+            pressed && { opacity: 0.8 },
+            (!aiTopic.trim() || aiIsPending) && { opacity: 0.5 },
+          ]}
+          onPress={handleAiGenerate}
+          disabled={!aiTopic.trim() || aiIsPending}
+          testID="ai-generate"
+        >
+          {aiIsPending ? (
+            <ActivityIndicator size="small" color={c.tint} />
+          ) : (
+            <MaterialCommunityIcons name="auto-fix" size={16} color={c.tint} />
+          )}
+          <Text style={styles.aiButtonText}>
+            {aiIsPending ? "Generating..." : "Generate with AI"}
+          </Text>
+        </Pressable>
       </View>
 
       <Text style={styles.label}>Title</Text>
@@ -343,6 +471,66 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   typeChipText: { fontFamily: fonts.medium, fontSize: 12, color: c.tint },
+  aiSection: {
+    backgroundColor: c.background,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: c.tint + "30",
+  },
+  aiHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  aiTitle: { fontFamily: fonts.semibold, fontSize: 15, color: c.tint },
+  aiLabel: {
+    fontFamily: fonts.medium,
+    fontSize: 13,
+    color: c.textSecondary,
+    marginBottom: spacing.xs,
+    marginTop: spacing.md,
+  },
+  sceneCountRow: {
+    flexDirection: "row",
+    gap: spacing.sm,
+  },
+  sceneCountChip: {
+    width: 40,
+    height: 32,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: c.border,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  sceneCountChipActive: { backgroundColor: c.tint + "20", borderColor: c.tint },
+  sceneCountChipText: {
+    fontFamily: fonts.medium,
+    fontSize: 13,
+    color: c.textMuted,
+  },
+  sceneCountChipTextActive: { color: c.tint },
+  aiButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
+    paddingVertical: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: c.tint,
+    marginTop: spacing.lg,
+  },
+  aiButtonText: { fontFamily: fonts.semibold, fontSize: 14, color: c.tint },
+  aiErrorText: {
+    fontFamily: fonts.regular,
+    fontSize: 13,
+    color: "#E53E3E",
+    marginTop: spacing.sm,
+  },
   label: {
     fontFamily: fonts.medium,
     fontSize: 13,

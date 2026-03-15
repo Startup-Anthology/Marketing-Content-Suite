@@ -228,4 +228,74 @@ You MUST respond with ONLY a valid JSON object (no markdown, no backticks, no ex
   }
 });
 
+router.post("/ai/generate-storyboard", async (req, res) => {
+  const { topic, sceneCount, mood } = req.body;
+  const numScenes = parseInt(sceneCount) || 5;
+
+  const brandContext = await getBrandContextBlock();
+
+  const systemPrompt = `You are a professional video storyboard creator and director. Generate a detailed storyboard with exactly ${numScenes} scenes for a marketing video.
+
+${brandContext ? `${brandContext}\n` : `Brand voice: Professional yet approachable, authoritative but not stuffy.\n`}
+${mood ? `Mood/Style: ${mood}` : "Mood/Style: Professional and engaging"}
+
+Each scene should have a clear visual direction, camera work, and timing that creates a cohesive narrative.
+
+You MUST respond with ONLY a valid JSON object (no markdown, no backticks, no extra text) with these fields:
+- "title": a compelling title for the storyboard (string)
+- "scenes": array of exactly ${numScenes} objects, each with:
+  - "title": string - short scene title (2-5 words)
+  - "description": string - detailed description of what happens visually in the scene (2-3 sentences)
+  - "shotType": string - one of "Wide", "Medium", "Close-up", "POV", "B-Roll", "Text Overlay"
+  - "duration": string - duration in seconds like "3s", "5s", "4s"`;
+
+  try {
+    const content = await callClaude(systemPrompt, `Create a storyboard for: ${topic}`);
+    const parsed = extractJSON(content);
+    res.json({
+      title: parsed.title || "",
+      scenes: parsed.scenes || [],
+    });
+  } catch {
+    res.json({ title: "", scenes: [] });
+  }
+});
+
+router.post("/ai/generate-ad-creative", async (req, res) => {
+  const { description, platform, targetAudience } = req.body;
+
+  const brandContext = await getBrandContextBlock();
+
+  const systemPrompt = `You are an expert advertising copywriter and creative director. Generate a complete ad creative based on the product/service description.
+
+${brandContext ? `${brandContext}\n` : `Brand voice: Professional yet approachable, authoritative but not stuffy.\n`}
+${platform ? `Platform: ${platform}` : "Platform: Multi-platform"}
+${targetAudience ? `Target Audience: ${targetAudience}` : ""}
+
+Create compelling ad copy that drives conversions and resonates with the target audience.
+
+You MUST respond with ONLY a valid JSON object (no markdown, no backticks, no extra text) with these fields:
+- "title": a campaign name for this ad creative (string)
+- "hook": string - an attention-grabbing opening hook (1-2 punchy sentences that stop the scroll)
+- "headline": string - a bold, benefit-driven headline
+- "body": string - persuasive body copy (3-5 sentences, highlighting key benefits and social proof)
+- "cta": string - a clear, action-oriented call to action
+- "audience": string - a detailed target audience description (demographics, interests, pain points)`;
+
+  try {
+    const content = await callClaude(systemPrompt, `Create an ad creative for: ${description}`);
+    const parsed = extractJSON(content);
+    res.json({
+      title: parsed.title || "",
+      hook: parsed.hook || "",
+      headline: parsed.headline || "",
+      body: parsed.body || "",
+      cta: parsed.cta || "",
+      audience: parsed.audience || "",
+    });
+  } catch {
+    res.json({ title: "", hook: "", headline: "", body: "", cta: "", audience: "" });
+  }
+});
+
 export default router;

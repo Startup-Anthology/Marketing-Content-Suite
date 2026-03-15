@@ -128,6 +128,28 @@ export async function aiGenerateDraft(data: {
   });
 }
 
+export async function aiGenerateStoryboard(data: {
+  topic: string;
+  sceneCount?: number;
+  mood?: string;
+}) {
+  return apiFetch("/ai/generate-storyboard", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function aiGenerateAdCreative(data: {
+  description: string;
+  platform?: string;
+  targetAudience?: string;
+}) {
+  return apiFetch("/ai/generate-ad-creative", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
 export async function aiSeoResearch(topic: string, targetAudience?: string) {
   return apiFetch("/ai/seo-research", {
     method: "POST",
