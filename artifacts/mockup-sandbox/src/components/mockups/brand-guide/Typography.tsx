@@ -31,7 +31,7 @@ const weightMap: Record<string, { fontWeight: number; fontStyle?: string }> = {
 
 export function Typography() {
   return (
-    <div style={{ fontFamily: "'Hanken Grotesk', sans-serif", background: '#FFFFFF', minHeight: '100vh', padding: '48px', color: '#0F1729' }}>
+    <div style={{ fontFamily: "'Hanken Grotesk', sans-serif", background: '#FFFFFF', minHeight: '100vh', padding: '48px', color: '#000000' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <div style={{ borderBottom: '3px solid #BB935B', paddingBottom: 16, marginBottom: 40 }}>
           <div style={{ fontFamily: "'League Spartan', sans-serif", fontSize: 14, fontWeight: 600, color: '#BB935B', textTransform: 'uppercase', letterSpacing: 3, marginBottom: 8 }}>Startup Anthology Brand Guide</div>
@@ -53,7 +53,7 @@ export function Typography() {
                   <span style={{ fontSize: 12, fontFamily: "'Roboto Mono', monospace", color: '#5C6B7F' }}>{t.font}</span>
                   <span style={{ fontSize: 11, background: '#E2E8F0', padding: '2px 8px', borderRadius: 4, color: '#5C6B7F' }}>{t.weight}</span>
                   <span style={{ fontSize: 11, fontFamily: "'Roboto Mono', monospace", color: '#999' }}>{t.size} / {t.lineHeight}</span>
-                  <span style={{ fontSize: 10, background: '#0F1729', color: '#FFFFFF', padding: '2px 8px', borderRadius: 4, marginLeft: 'auto' }}>{t.source}</span>
+                  <span style={{ fontSize: 10, background: '#000000', color: '#FFFFFF', padding: '2px 8px', borderRadius: 4, marginLeft: 'auto' }}>{t.source}</span>
                 </div>
                 <div style={{ padding: '16px 20px' }}>
                   <p style={{
@@ -63,7 +63,7 @@ export function Typography() {
                     fontStyle: weights.fontStyle || 'normal',
                     lineHeight: parseFloat(t.lineHeight),
                     margin: 0,
-                    color: '#0F1729',
+                    color: '#000000',
                   }}>{t.sample}</p>
                 </div>
               </div>
@@ -76,19 +76,19 @@ export function Typography() {
             <h2 style={{ fontFamily: "'League Spartan', sans-serif", fontSize: 20, fontWeight: 700, marginBottom: 12 }}>Font Pairing Rationale</h2>
             <div style={{ border: '1px solid #E2E8F0', borderRadius: 8, padding: 20 }}>
               <p style={{ fontSize: 14, color: '#5C6B7F', lineHeight: 1.6, margin: '0 0 12px' }}>
-                <strong style={{ color: '#0F1729' }}>League Spartan</strong> provides bold, geometric headings that command attention and establish hierarchy.
+                <strong style={{ color: '#000000' }}>League Spartan</strong> provides bold, geometric headings that command attention and establish hierarchy.
               </p>
               <p style={{ fontSize: 14, color: '#5C6B7F', lineHeight: 1.6, margin: '0 0 12px' }}>
-                <strong style={{ color: '#0F1729' }}>Lato</strong> serves as the title font with bold italic styling for maximum visual impact on hero sections.
+                <strong style={{ color: '#000000' }}>Lato</strong> serves as the title font with bold italic styling for maximum visual impact on hero sections.
               </p>
               <p style={{ fontSize: 14, color: '#5C6B7F', lineHeight: 1.6, margin: '0 0 12px' }}>
-                <strong style={{ color: '#0F1729' }}>Montserrat</strong> is the primary body font and versatile workhorse — used for subtitles, body text, section headers, and captions across different weights.
+                <strong style={{ color: '#000000' }}>Montserrat</strong> is the primary body font and versatile workhorse — used for subtitles, body text, section headers, and captions across different weights.
               </p>
               <p style={{ fontSize: 14, color: '#5C6B7F', lineHeight: 1.6, margin: '0 0 12px' }}>
-                <strong style={{ color: '#0F1729' }}>Gotham</strong> is the preferred section header font (Adobe licensed). When unavailable, Montserrat serves as the open-source fallback with similar geometric proportions.
+                <strong style={{ color: '#000000' }}>Gotham</strong> is the preferred section header font (Adobe licensed). When unavailable, Montserrat serves as the open-source fallback with similar geometric proportions.
               </p>
               <p style={{ fontSize: 14, color: '#5C6B7F', lineHeight: 1.6, margin: 0 }}>
-                <strong style={{ color: '#0F1729' }}>Lora</strong> adds editorial warmth for quotes and pull-quotes, contrasting the geometric sans-serif system.
+                <strong style={{ color: '#000000' }}>Lora</strong> adds editorial warmth for quotes and pull-quotes, contrasting the geometric sans-serif system.
               </p>
             </div>
           </div>
@@ -117,7 +117,7 @@ export function Typography() {
         <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid #E2E8F0' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
-              <tr style={{ background: '#0F1729', color: '#FFFFFF' }}>
+              <tr style={{ background: '#000000', color: '#FFFFFF' }}>
                 <th style={{ padding: '10px 14px', textAlign: 'left', fontFamily: "'League Spartan', sans-serif" }}>Purpose</th>
                 <th style={{ padding: '10px 14px', textAlign: 'left', fontFamily: "'League Spartan', sans-serif" }}>Typeface</th>
                 <th style={{ padding: '10px 14px', textAlign: 'left', fontFamily: "'League Spartan', sans-serif" }}>Weight / Style</th>

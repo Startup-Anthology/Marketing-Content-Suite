@@ -29,7 +29,7 @@ const brandPrinciples = [
 
 export function AudiencePositioning() {
   return (
-    <div style={{ fontFamily: "'Hanken Grotesk', sans-serif", background: '#FFFFFF', minHeight: '100vh', padding: '48px', color: '#0F1729' }}>
+    <div style={{ fontFamily: "'Hanken Grotesk', sans-serif", background: '#FFFFFF', minHeight: '100vh', padding: '48px', color: '#000000' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <div style={{ borderBottom: '3px solid #BB935B', paddingBottom: 16, marginBottom: 40 }}>
           <div style={{ fontFamily: "'League Spartan', sans-serif", fontSize: 14, fontWeight: 600, color: '#BB935B', textTransform: 'uppercase', letterSpacing: 3, marginBottom: 8 }}>Startup Anthology Brand Guide</div>
@@ -41,7 +41,7 @@ export function AudiencePositioning() {
           <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid #E2E8F0' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
               <thead>
-                <tr style={{ background: '#0F1729', color: '#FFFFFF' }}>
+                <tr style={{ background: '#000000', color: '#FFFFFF' }}>
                   <th style={{ padding: '12px 16px', textAlign: 'left', fontFamily: "'League Spartan', sans-serif", fontWeight: 600, width: '22%' }}>Segment</th>
                   <th style={{ padding: '12px 16px', textAlign: 'left', fontFamily: "'League Spartan', sans-serif", fontWeight: 600 }}>Needs & Behaviors</th>
                   <th style={{ padding: '12px 16px', textAlign: 'left', fontFamily: "'League Spartan', sans-serif", fontWeight: 600, width: '12%' }}>Priority</th>
@@ -67,7 +67,7 @@ export function AudiencePositioning() {
           <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid #E2E8F0' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
               <thead>
-                <tr style={{ background: '#0F1729', color: '#FFFFFF' }}>
+                <tr style={{ background: '#000000', color: '#FFFFFF' }}>
                   <th style={{ padding: '12px 16px', textAlign: 'left', fontFamily: "'League Spartan', sans-serif", fontWeight: 600, width: '22%' }}>Segment</th>
                   <th style={{ padding: '12px 16px', textAlign: 'left', fontFamily: "'League Spartan', sans-serif", fontWeight: 600 }}>Needs & Behaviors</th>
                   <th style={{ padding: '12px 16px', textAlign: 'left', fontFamily: "'League Spartan', sans-serif", fontWeight: 600, width: '12%' }}>Priority</th>

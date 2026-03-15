@@ -28,6 +28,14 @@ function NativeTabLayout() {
         <Icon sf={{ default: "calendar", selected: "calendar" }} />
         <Label>Schedule</Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="brand">
+        <Icon sf={{ default: "book", selected: "book.fill" }} />
+        <Label>Brand</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="help">
+        <Icon sf={{ default: "questionmark.circle", selected: "questionmark.circle.fill" }} />
+        <Label>Help</Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="settings">
         <Icon sf={{ default: "gearshape", selected: "gearshape.fill" }} />
         <Label>Settings</Label>
@@ -116,6 +124,30 @@ function ClassicTabLayout() {
               <SymbolView name="calendar" tintColor={color} size={22} />
             ) : (
               <Feather name="calendar" size={22} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="brand"
+        options={{
+          title: "Brand",
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="book" tintColor={color} size={22} />
+            ) : (
+              <MaterialCommunityIcons name="bookmark-outline" size={22} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="help"
+        options={{
+          title: "Help",
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="questionmark.circle" tintColor={color} size={22} />
+            ) : (
+              <Feather name="help-circle" size={22} color={color} />
             ),
         }}
       />

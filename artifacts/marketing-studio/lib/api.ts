@@ -134,3 +134,23 @@ export async function aiSeoResearch(topic: string, targetAudience?: string) {
     body: JSON.stringify({ topic, targetAudience }),
   });
 }
+
+export async function fetchBrandGuide() {
+  return apiFetch("/brand-guide");
+}
+
+export async function saveBrandGuide(data: {
+  brandName?: string;
+  voiceDescriptors?: string;
+  tone?: string;
+  colorPalette?: string;
+  fonts?: string;
+  logoUrl?: string;
+  tagline?: string;
+  brandStory?: string;
+}) {
+  return apiFetch("/brand-guide", {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}

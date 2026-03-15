@@ -31,7 +31,7 @@ const incorrectUsage = [
 
 export function LogoIdentity() {
   return (
-    <div style={{ fontFamily: "'Hanken Grotesk', sans-serif", background: '#FFFFFF', minHeight: '100vh', padding: '48px', color: '#0F1729' }}>
+    <div style={{ fontFamily: "'Hanken Grotesk', sans-serif", background: '#FFFFFF', minHeight: '100vh', padding: '48px', color: '#000000' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <div style={{ borderBottom: '3px solid #BB935B', paddingBottom: 16, marginBottom: 40 }}>
           <div style={{ fontFamily: "'League Spartan', sans-serif", fontSize: 14, fontWeight: 600, color: '#BB935B', textTransform: 'uppercase', letterSpacing: 3, marginBottom: 8 }}>Startup Anthology Brand Guide</div>
@@ -61,7 +61,7 @@ export function LogoIdentity() {
                     />
                   </div>
                 </div>
-                <div style={{ background: '#0F1729', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+                <div style={{ background: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: 10, color: '#999', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>Dark Background</div>
                     <img
@@ -87,9 +87,9 @@ export function LogoIdentity() {
                 <div style={{ position: 'absolute', top: 12, right: 16, fontSize: 11, color: '#BB935B', fontWeight: 600 }}>Clear space = 1x icon height</div>
               </div>
               <div style={{ fontSize: 13, color: '#5C6B7F', lineHeight: 1.6 }}>
-                <p style={{ margin: '0 0 8px' }}><strong style={{ color: '#0F1729' }}>Clear space:</strong> Maintain a minimum clear space around the logo equal to the height of the icon badge on all sides.</p>
-                <p style={{ margin: '0 0 8px' }}><strong style={{ color: '#0F1729' }}>Icon minimum:</strong> 32px height</p>
-                <p style={{ margin: 0 }}><strong style={{ color: '#0F1729' }}>Full logo minimum:</strong> 80px width (with wordmark)</p>
+                <p style={{ margin: '0 0 8px' }}><strong style={{ color: '#000000' }}>Clear space:</strong> Maintain a minimum clear space around the logo equal to the height of the icon badge on all sides.</p>
+                <p style={{ margin: '0 0 8px' }}><strong style={{ color: '#000000' }}>Icon minimum:</strong> 32px height</p>
+                <p style={{ margin: 0 }}><strong style={{ color: '#000000' }}>Full logo minimum:</strong> 80px width (with wordmark)</p>
               </div>
             </div>
           </div>
@@ -99,15 +99,15 @@ export function LogoIdentity() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                   <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#000', flexShrink: 0, marginTop: 2 }} />
-                  <p style={{ fontSize: 13, color: '#5C6B7F', margin: 0, lineHeight: 1.5 }}>Use the <strong style={{ color: '#0F1729' }}>black badge</strong> and wordmark on light backgrounds (white, light gray).</p>
+                  <p style={{ fontSize: 13, color: '#5C6B7F', margin: 0, lineHeight: 1.5 }}>Use the <strong style={{ color: '#000000' }}>black badge</strong> and wordmark on light backgrounds (white, light gray).</p>
                 </div>
                 <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                   <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#FFF', border: '1px solid #E2E8F0', flexShrink: 0, marginTop: 2 }} />
-                  <p style={{ fontSize: 13, color: '#5C6B7F', margin: 0, lineHeight: 1.5 }}>Use the <strong style={{ color: '#0F1729' }}>white badge</strong> and wordmark on dark backgrounds (black, dark images).</p>
+                  <p style={{ fontSize: 13, color: '#5C6B7F', margin: 0, lineHeight: 1.5 }}>Use the <strong style={{ color: '#000000' }}>white badge</strong> and wordmark on dark backgrounds (black, dark images).</p>
                 </div>
                 <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                   <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#BB935B', flexShrink: 0, marginTop: 2 }} />
-                  <p style={{ fontSize: 13, color: '#5C6B7F', margin: 0, lineHeight: 1.5 }}>The <strong style={{ color: '#0F1729' }}>gold wordmark</strong> variant is versatile and can be used on both light and dark backgrounds.</p>
+                  <p style={{ fontSize: 13, color: '#5C6B7F', margin: 0, lineHeight: 1.5 }}>The <strong style={{ color: '#000000' }}>gold wordmark</strong> variant is versatile and can be used on both light and dark backgrounds.</p>
                 </div>
               </div>
             </div>
@@ -121,7 +121,7 @@ export function LogoIdentity() {
               const isDark = f.file.includes('white') || f.file.includes('gold-bg');
               return (
                 <div key={f.file} style={{ border: '1px solid #E2E8F0', borderRadius: 8, overflow: 'hidden' }}>
-                  <div style={{ background: isDark ? '#0F1729' : '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, minHeight: 80, border: isDark ? 'none' : '1px solid #F1F5F9' }}>
+                  <div style={{ background: isDark ? '#000000' : '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, minHeight: 80, border: isDark ? 'none' : '1px solid #F1F5F9' }}>
                     <img src={`/__mockup/images/logos/${f.file}`} alt={f.label} style={{ maxHeight: 60, maxWidth: 180, objectFit: 'contain' }} />
                   </div>
                   <div style={{ padding: '8px 12px', background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>

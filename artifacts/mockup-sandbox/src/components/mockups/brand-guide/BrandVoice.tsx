@@ -35,7 +35,7 @@ const dontList = [
 
 export function BrandVoice() {
   return (
-    <div style={{ fontFamily: "'Hanken Grotesk', sans-serif", background: '#FFFFFF', minHeight: '100vh', padding: '48px', color: '#0F1729' }}>
+    <div style={{ fontFamily: "'Hanken Grotesk', sans-serif", background: '#FFFFFF', minHeight: '100vh', padding: '48px', color: '#000000' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <div style={{ borderBottom: '3px solid #BB935B', paddingBottom: 16, marginBottom: 40 }}>
           <div style={{ fontFamily: "'League Spartan', sans-serif", fontSize: 14, fontWeight: 600, color: '#BB935B', textTransform: 'uppercase', letterSpacing: 3, marginBottom: 8 }}>Startup Anthology Brand Guide</div>
@@ -44,7 +44,7 @@ export function BrandVoice() {
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, marginBottom: 48 }}>
           <div>
-            <div style={{ background: '#0F1729', borderRadius: 12, padding: 32, color: '#FFFFFF', height: '100%' }}>
+            <div style={{ background: '#000000', borderRadius: 12, padding: 32, color: '#FFFFFF', height: '100%' }}>
               <div style={{ fontFamily: "'Lato', sans-serif", fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2, color: '#BB935B', marginBottom: 16 }}>Tagline</div>
               <p style={{ fontFamily: "'League Spartan', sans-serif", fontSize: 32, fontWeight: 700, margin: '0 0 24px', lineHeight: 1.2 }}>Educate. Equip. Elevate.</p>
               <div style={{ fontFamily: "'Lato', sans-serif", fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2, color: '#BB935B', marginBottom: 16 }}>Mission</div>
@@ -87,7 +87,7 @@ export function BrandVoice() {
               <div key={v.attribute} style={{ border: '1px solid #E2E8F0', borderRadius: 8, padding: 20, background: '#FFFFFF' }}>
                 <div style={{ fontFamily: "'League Spartan', sans-serif", fontSize: 18, fontWeight: 700, color: '#BB935B', marginBottom: 8 }}>{v.attribute}</div>
                 <p style={{ fontSize: 14, color: '#5C6B7F', margin: '0 0 12px', lineHeight: 1.5 }}>{v.description}</p>
-                <p style={{ fontSize: 13, fontStyle: 'italic', color: '#0F1729', margin: 0, lineHeight: 1.5, fontFamily: "'Lora', serif" }}>{v.example}</p>
+                <p style={{ fontSize: 13, fontStyle: 'italic', color: '#000000', margin: 0, lineHeight: 1.5, fontFamily: "'Lora', serif" }}>{v.example}</p>
               </div>
             ))}
           </div>
@@ -98,7 +98,7 @@ export function BrandVoice() {
           <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid #E2E8F0' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
               <thead>
-                <tr style={{ background: '#0F1729', color: '#FFFFFF' }}>
+                <tr style={{ background: '#000000', color: '#FFFFFF' }}>
                   <th style={{ padding: '12px 16px', textAlign: 'left', fontFamily: "'League Spartan', sans-serif", fontWeight: 600 }}>Context</th>
                   <th style={{ padding: '12px 16px', textAlign: 'left', fontFamily: "'League Spartan', sans-serif", fontWeight: 600 }}>Tone</th>
                   <th style={{ padding: '12px 16px', textAlign: 'left', fontFamily: "'League Spartan', sans-serif", fontWeight: 600 }}>Example</th>

@@ -106,23 +106,26 @@ Isolated frontend sandbox for UI prototyping. Components are rendered via a Vite
 
 - **Brand Assets** (`public/images/logos/`): 9 logo files (vertical/horizontal, black/white/gold variants)
 - **Fonts loaded in index.html**: Hanken Grotesk, Lato, League Spartan, Lora, Montserrat, Inter (+ 20+ bundled fonts)
-- **Brand Colors**: SA Gold #BB935B, Dark Navy #0F1729, White #FFFFFF, Black #000000, Gray #999999
+- **Brand Colors**: SA Gold #BB935B, Black #000000, White #FFFFFF, Gray #64748B
 
 ### `artifacts/marketing-studio` (`@workspace/marketing-studio`)
 
-Expo React Native mobile app — Marketing Content Studio for Startup Anthology founders. Styled with SA brand colors (Dark Navy #0F1729, SA Gold #BB935B).
+Expo React Native mobile app — Marketing Content Studio for Startup Anthology founders. Styled with SA brand colors (Black #000000, SA Gold #BB935B).
 
-- **Tabs**: Create, Studio, Research, Schedule, Settings
+- **Tabs**: Create, Studio, Research, Schedule, Brand, Help, Settings
 - **Modals**: create-content, create-storyboard, create-post
 - **Features**:
   - AI-powered content generation (social posts, newsletters, captions, blog posts)
   - Storyboard & ad creative builder with scene management
   - SEO/AEO research with keyword analysis, PAA questions, talking points
   - Post scheduling with weekly calendar view
+  - Brand Guide — define brand identity (name, voice, tone, colors, fonts, logo, story) with live preview; auto-injected into AI prompts
+  - Help — searchable FAQ, feature summaries, and branding guide reference
   - Brand settings display
 - **API**: Uses `lib/api.ts` helper to call `@workspace/api-server` endpoints
-- **DB Tables**: content_pieces, storyboards, research_notes, scheduled_posts
-- **AI Routes**: POST /api/ai/generate-draft, POST /api/ai/seo-research (OpenAI gpt-5.2)
+- **DB Tables**: content_pieces, storyboards, research_notes, scheduled_posts, brand_guide
+- **AI Routes**: POST /api/ai/generate-draft, POST /api/ai/seo-research (OpenAI gpt-5.2) — both inject brand context from saved brand guide
+- **Brand Guide API**: GET /api/brand-guide, PUT /api/brand-guide — singleton brand identity CRUD
 - **Fonts**: Inter (400/500/600/700)
 - **Port**: 23704 (via $PORT)
 

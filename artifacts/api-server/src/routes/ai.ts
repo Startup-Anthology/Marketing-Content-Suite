@@ -1,13 +1,16 @@
 import { Router } from "express";
 import { openai } from "@workspace/integrations-openai-ai-server";
+import { getBrandContextBlock } from "../lib/brand-context";
 
 const router = Router();
 
 router.post("/ai/generate-draft", async (req, res) => {
   const { type, platform, topic, tone, additionalContext } = req.body;
 
-  const systemPrompt = `You are a marketing content expert for Startup Anthology, a brand that serves founders and startups. Generate polished, ready-to-use ${type} content for ${platform}.
-Brand voice: Professional yet approachable, authoritative but not stuffy. Think "smart friend who happens to be a marketing expert."
+  const brandContext = await getBrandContextBlock();
+
+  const systemPrompt = `You are a marketing content expert. Generate polished, ready-to-use ${type} content for ${platform}.
+${brandContext ? `\n${brandContext}\n` : `Brand voice: Professional yet approachable, authoritative but not stuffy. Think "smart friend who happens to be a marketing expert."`}
 ${tone ? `Tone: ${tone}` : ""}
 ${additionalContext ? `Additional context: ${additionalContext}` : ""}
 
@@ -40,7 +43,10 @@ Return a JSON object with:
 router.post("/ai/seo-research", async (req, res) => {
   const { topic, targetAudience } = req.body;
 
+  const brandContext = await getBrandContextBlock();
+
   const systemPrompt = `You are an SEO and Answer Engine Optimization (AEO) research expert. Analyze the given topic and provide comprehensive research results.
+${brandContext ? `\n${brandContext}\n` : ""}
 ${targetAudience ? `Target audience: ${targetAudience}` : "Target audience: startup founders and entrepreneurs"}
 
 Return a JSON object with:

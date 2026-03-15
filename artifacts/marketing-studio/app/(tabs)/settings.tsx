@@ -19,9 +19,9 @@ type MCIName = ComponentProps<typeof MaterialCommunityIcons>["name"];
 
 const BRAND_COLORS = [
   { name: "SA Gold", hex: "#BB935B" },
-  { name: "Dark Navy", hex: "#0F1729" },
+  { name: "Black", hex: "#000000" },
   { name: "White", hex: "#FFFFFF" },
-  { name: "Slate", hex: "#64748B" },
+  { name: "Gray", hex: "#64748B" },
 ];
 
 const SUPPORTED_PLATFORMS: { name: string; icon: MCIName }[] = [
@@ -67,7 +67,7 @@ export default function SettingsTab() {
                   styles.colorSwatch,
                   {
                     backgroundColor: color.hex,
-                    borderWidth: color.hex === "#FFFFFF" ? 1 : 0,
+                    borderWidth: (color.hex === "#FFFFFF" || color.hex === "#000000") ? 1 : 0,
                     borderColor: c.border,
                   },
                 ]}

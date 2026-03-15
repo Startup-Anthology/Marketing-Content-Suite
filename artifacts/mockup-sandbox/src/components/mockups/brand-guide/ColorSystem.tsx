@@ -91,9 +91,8 @@ function contrastRatio(hex1: string, hex2: string) {
 
 const coreColors = [
   { name: "SA Gold", hex: "#BB935B", rgb: "187, 147, 91", usage: "Accent color for highlights, calls-to-action, and key information" },
-  { name: "Dark Navy", hex: "#0F1729", rgb: "15, 23, 41", usage: "Primary text color, dark backgrounds, headers" },
+  { name: "Black", hex: "#000000", rgb: "0, 0, 0", usage: "Primary text color, dark backgrounds, headers" },
   { name: "White", hex: "#FFFFFF", rgb: "255, 255, 255", usage: "Primary background color, text on dark backgrounds" },
-  { name: "Black", hex: "#000000", rgb: "0, 0, 0", usage: "Primary text color, dark backgrounds" },
   { name: "Gray", hex: "#999999", rgb: "153, 153, 153", usage: "Secondary text, subtle UI elements, and borders" },
 ];
 
@@ -104,22 +103,22 @@ const uiColors = [
 ];
 
 const contrastPairs = [
-  { fg: "#0F1729", bg: "#FFFFFF", label: "Navy on White" },
-  { fg: "#FFFFFF", bg: "#0F1729", label: "White on Navy" },
+  { fg: "#000000", bg: "#FFFFFF", label: "Black on White" },
+  { fg: "#FFFFFF", bg: "#000000", label: "White on Black" },
   { fg: "#BB935B", bg: "#FFFFFF", label: "Gold on White" },
-  { fg: "#BB935B", bg: "#0F1729", label: "Gold on Navy" },
+  { fg: "#BB935B", bg: "#000000", label: "Gold on Black" },
   { fg: "#FFFFFF", bg: "#BB935B", label: "White on Gold" },
-  { fg: "#0F1729", bg: "#BB935B", label: "Navy on Gold" },
+  { fg: "#000000", bg: "#BB935B", label: "Black on Gold" },
   { fg: "#5C6B7F", bg: "#FFFFFF", label: "Text on White" },
   { fg: "#999999", bg: "#FFFFFF", label: "Gray on White" },
 ];
 
 const goldShades = generateShadesOklch("#BB935B");
-const navyShades = generateShadesOklch("#0F1729");
+const navyShades = generateShadesOklch("#000000");
 
 export function ColorSystem() {
   return (
-    <div style={{ fontFamily: "'Hanken Grotesk', sans-serif", background: '#FFFFFF', minHeight: '100vh', padding: '48px', color: '#0F1729' }}>
+    <div style={{ fontFamily: "'Hanken Grotesk', sans-serif", background: '#FFFFFF', minHeight: '100vh', padding: '48px', color: '#000000' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <div style={{ borderBottom: '3px solid #BB935B', paddingBottom: 16, marginBottom: 40 }}>
           <div style={{ fontFamily: "'League Spartan', sans-serif", fontSize: 14, fontWeight: 600, color: '#BB935B', textTransform: 'uppercase', letterSpacing: 3, marginBottom: 8 }}>Startup Anthology Brand Guide</div>
@@ -171,7 +170,7 @@ export function ColorSystem() {
             </div>
           </div>
           <div>
-            <h2 style={{ fontFamily: "'League Spartan', sans-serif", fontSize: 20, fontWeight: 700, marginBottom: 12 }}>Dark Navy Ramp <span style={{ fontSize: 11, fontWeight: 400, color: '#999', fontFamily: "'Roboto Mono', monospace" }}>(OKLCH interpolation)</span></h2>
+            <h2 style={{ fontFamily: "'League Spartan', sans-serif", fontSize: 20, fontWeight: 700, marginBottom: 12 }}>Black Ramp <span style={{ fontSize: 11, fontWeight: 400, color: '#999', fontFamily: "'Roboto Mono', monospace" }}>(OKLCH interpolation)</span></h2>
             <div style={{ display: 'flex', borderRadius: 8, overflow: 'hidden', border: '1px solid #E2E8F0' }}>
               {navyShades.map((s) => (
                 <div key={s.step} style={{ flex: 1, textAlign: 'center' }}>
@@ -190,7 +189,7 @@ export function ColorSystem() {
         <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid #E2E8F0', marginBottom: 40 }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
-              <tr style={{ background: '#0F1729', color: '#FFFFFF' }}>
+              <tr style={{ background: '#000000', color: '#FFFFFF' }}>
                 <th style={{ padding: '10px 14px', textAlign: 'left', fontFamily: "'League Spartan', sans-serif" }}>Combination</th>
                 <th style={{ padding: '10px 14px', textAlign: 'left', fontFamily: "'League Spartan', sans-serif" }}>Preview</th>
                 <th style={{ padding: '10px 14px', textAlign: 'left', fontFamily: "'League Spartan', sans-serif" }}>Ratio</th>
@@ -226,8 +225,8 @@ export function ColorSystem() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
           <div>
             <h2 style={{ fontFamily: "'League Spartan', sans-serif", fontSize: 20, fontWeight: 700, marginBottom: 12 }}>Dark Mode Guidelines</h2>
-            <div style={{ background: '#0F1729', borderRadius: 8, padding: 24, color: '#E2E8F0' }}>
-              <p style={{ fontSize: 14, lineHeight: 1.6, margin: '0 0 12px' }}>Use <span style={{ fontFamily: "'Roboto Mono', monospace", background: '#1E293B', padding: '2px 6px', borderRadius: 4 }}>#0F1729</span> as the primary dark background — not pure black.</p>
+            <div style={{ background: '#000000', borderRadius: 8, padding: 24, color: '#E2E8F0' }}>
+              <p style={{ fontSize: 14, lineHeight: 1.6, margin: '0 0 12px' }}>Use <span style={{ fontFamily: "'Roboto Mono', monospace", background: '#1E293B', padding: '2px 6px', borderRadius: 4 }}>#000000</span> as the primary dark background — not pure black.</p>
               <p style={{ fontSize: 14, lineHeight: 1.6, margin: '0 0 12px' }}>Slightly desaturate SA Gold for dark backgrounds to reduce visual vibration.</p>
               <p style={{ fontSize: 14, lineHeight: 1.6, margin: 0 }}>Use <span style={{ fontFamily: "'Roboto Mono', monospace", background: '#1E293B', padding: '2px 6px', borderRadius: 4 }}>#E2E8F0</span> for primary text on dark backgrounds.</p>
             </div>
@@ -238,7 +237,7 @@ export function ColorSystem() {
               <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 6, padding: '10px 14px', fontSize: 13, color: '#166534' }}>Use gold sparingly as an accent for CTAs and highlights</div>
               <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 6, padding: '10px 14px', fontSize: 13, color: '#166534' }}>Use black badge on light backgrounds, white badge on dark</div>
               <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 6, padding: '10px 14px', fontSize: 13, color: '#991B1B' }}>Don't use gold for large blocks of text or backgrounds</div>
-              <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 6, padding: '10px 14px', fontSize: 13, color: '#991B1B' }}>Don't use pure black (#000) as a background — use Dark Navy instead</div>
+              <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 6, padding: '10px 14px', fontSize: 13, color: '#991B1B' }}>Use pure black (#000000) for dark backgrounds and headers</div>
             </div>
           </div>
         </div>
