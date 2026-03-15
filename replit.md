@@ -112,7 +112,7 @@ Isolated frontend sandbox for UI prototyping. Components are rendered via a Vite
 
 Expo React Native mobile app — Marketing Content Studio for Startup Anthology founders. Styled with SA brand colors (Black #000000, SA Gold #BB935B).
 
-- **Tabs** (4): Create, Studio, Research, Schedule — each has a gear icon in the header for Settings
+- **Tabs** (4): Create, Studio, Research, Schedule — each has a gear icon + sun/moon theme toggle in the header
 - **Modals**: create-content, create-storyboard, create-post, podcast-generator, interview-prep, settings
 - **Features**:
   - AI-powered content generation (social posts, newsletters, captions, blog posts)
@@ -129,6 +129,13 @@ Expo React Native mobile app — Marketing Content Studio for Startup Anthology 
     - About — brand palette, version info, supported platforms
   - Podcast Generator: AI-powered episode script generation (solo, duo, interview, debate, narrative formats) with structured output (cold open, setup, segments, takeaways, outro), speaker tag rendering, per-section copy, and draft saving
   - Interview Prep: AI-powered interview preparation (guest brief, 15-20 structured questions by segment, follow-up suggestions, run-of-show timeline), with tabbed output view, export/share, and draft saving
+  - **Day/Night Mode Toggle**: Sun/moon icon in all tab headers; instant theme switching across entire app with AsyncStorage persistence; defaults to dark mode
+- **Theming Architecture**:
+  - `contexts/ThemeContext.tsx` — provides `useTheme()` hook returning `{ colors, spacing, radius, fonts, isDark, toggleTheme }`
+  - `constants/colors.ts` — exports `Colors.dark` and `Colors.light` palettes + `ColorPalette` type
+  - All screens use `const { colors: c } = useTheme()` + `useMemo(() => createStyles(c), [c])` factory pattern
+  - Dark palette: bg #000000, surface #111111/#1A1A1A/#2A2A2A, SA Gold #BB935B accents
+  - Light palette: bg #FFFFFF, surface #F5F5F7, text #1A1A1A
 - **API**: Uses `lib/api.ts` helper to call `@workspace/api-server` endpoints
 - **DB Tables**: users, social_accounts, content_pieces, storyboards, research_notes, scheduled_posts (with google_calendar_event_id), brand_guide, podcast_scripts, interview_preps
 - **Authentication**: JWT-based auth with bcryptjs password hashing; first user auto-assigned admin role; session persistence via AsyncStorage; requires `JWT_SECRET` env var
@@ -146,6 +153,21 @@ Expo React Native mobile app — Marketing Content Studio for Startup Anthology 
 - **Platform Validation**: Character limits enforced per platform (X/Twitter 280, LinkedIn 3000, Instagram/TikTok 2200, YouTube 5000)
 - **Fonts**: Inter (400/500/600/700)
 - **Port**: 23704 (via $PORT)
+
+## GitHub Integration
+
+- **Repository**: `git@github.com:Startup-Anthology/Marketing-Content-Suite.git`
+- **Branch**: `master` (both Replit and GitHub)
+- **Push**: `git push origin master` or use the Replit Git tab button
+- **CI/CD**: GitHub Actions workflows in `.github/workflows/`
+  - `ci.yml` — typecheck + build on push/PR to master
+  - `deploy.yml` — deploy pipeline on push to master (deploy step is a placeholder)
+
+## Skills (CI/CD)
+
+- `deployment-pipeline-design` — multi-stage pipeline architecture with approval gates
+- `gitlab-ci-patterns` — GitLab CI/CD templates
+- `github-actions-templates` — GitHub Actions workflow templates tailored to this monorepo
 
 ### `lib/integrations-anthropic-ai` (`@workspace/integrations-anthropic-ai`)
 
