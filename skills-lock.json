@@ -1,10 +1,30 @@
 {
   "version": 1,
   "skills": {
+    "ai-social-media-content": {
+      "source": "skill-zero/s",
+      "sourceType": "github",
+      "computedHash": "f7663cdc458d6a9f802dfc92776fda6f9f80458b444b5a8c8cd5b2dde2e1ec35"
+    },
     "canvas-design": {
       "source": "anthropics/skills",
       "sourceType": "github",
       "computedHash": "a2fe47d24b3fd8e52faef731fff099c557e698083cd644b2e5695cc4dd8c7715"
+    },
+    "content-strategy": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "be124f3733b037fb8d859f275454ecd1c590759ef9ab184bea35ba1a0a38e14c"
+    },
+    "copy-editing": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "3c6241215420e69b36814270a47413b2de9593b5516f5942b7481092f6c63382"
+    },
+    "copywriting": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "2e83eda2221e97166172a0798e9b0379e34080595e107e2fc0cf580e9b3bbf7b"
     },
     "frontend-code-review": {
       "source": "langgenius/dify",
