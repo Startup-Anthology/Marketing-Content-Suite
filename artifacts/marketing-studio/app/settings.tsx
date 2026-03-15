@@ -16,6 +16,7 @@ import {
   View,
 } from "react-native";
 
+import BrandGuideViewer from "@/components/BrandGuideViewer";
 import Colors from "@/constants/colors";
 import { fonts, spacing, radius } from "@/constants/theme";
 import { fetchBrandGuide, saveBrandGuide } from "@/lib/api";
@@ -84,6 +85,7 @@ export default function SettingsScreen() {
   const [activeSection, setActiveSection] = useState<SectionKey>("about");
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [helpSearch, setHelpSearch] = useState("");
+  const [brandGuideVisible, setBrandGuideVisible] = useState(false);
 
   const [brandName, setBrandName] = useState("");
   const [voiceDescriptors, setVoiceDescriptors] = useState("");
@@ -160,6 +162,30 @@ export default function SettingsScreen() {
   };
   const addFont = () => { setFontEntries([...fontEntries, { role: "", name: "" }]); markChanged(); };
   const removeFont = (index: number) => { setFontEntries(fontEntries.filter((_, i) => i !== index)); markChanged(); };
+
+  const handleUseAsTemplate = () => {
+    setBrandName("Startup Anthology");
+    setVoiceDescriptors("Empowering, Supportive, Honest, Accessible, Action-Oriented, Builder-Centric");
+    setTone("Confident, encouraging, data-driven");
+    setTagline("Educate. Equip. Elevate.");
+    setBrandStory("Empowering entrepreneurs and small business owners who'd rather run their business than wrestle with it. We give them the tools and knowledge to focus on growth, not complexity. Championing the operators and doers who don't have time for spreadsheet headaches or financial jargon.");
+    setColors([
+      { name: "SA Gold", hex: "#BB935B" },
+      { name: "Black", hex: "#000000" },
+      { name: "White", hex: "#FFFFFF" },
+      { name: "Gray", hex: "#999999" },
+    ]);
+    setFontEntries([
+      { role: "Heading", name: "League Spartan" },
+      { role: "Body", name: "Montserrat" },
+      { role: "Title", name: "Lato" },
+      { role: "Quote", name: "Lora" },
+    ]);
+    setHasChanges(true);
+    setBrandGuideVisible(false);
+    setActiveSection("brand");
+    Alert.alert("Template Applied", "The Startup Anthology brand structure has been loaded into your Brand Guide editor. Review and save when ready.");
+  };
 
   const normalizedSearch = helpSearch.toLowerCase().trim();
   const filteredFaq = normalizedSearch
@@ -363,6 +389,27 @@ export default function SettingsScreen() {
 
   const renderHelpSection = () => (
     <>
+      <Pressable style={styles.brandGuideCard} onPress={() => setBrandGuideVisible(true)}>
+        <View style={styles.brandGuideCardIcon}>
+          <MaterialCommunityIcons name="book-open-variant" size={24} color={c.tint} />
+        </View>
+        <View style={styles.brandGuideCardContent}>
+          <Text style={styles.brandGuideCardTitle}>Startup Anthology Brand Guide</Text>
+          <Text style={styles.brandGuideCardDesc}>
+            Explore the complete brand identity system — colors, typography, voice, logo guidelines, and design patterns.
+          </Text>
+          <View style={styles.brandGuideCardFooter}>
+            <View style={styles.brandGuideCardBadge}>
+              <Text style={styles.brandGuideCardBadgeText}>Reference Example</Text>
+            </View>
+            <View style={styles.brandGuideCardAction}>
+              <Text style={styles.brandGuideCardActionText}>View Guide</Text>
+              <Feather name="arrow-right" size={12} color={c.tint} />
+            </View>
+          </View>
+        </View>
+      </Pressable>
+
       <View style={styles.searchWrap}>
         <Feather name="search" size={16} color={c.textMuted} />
         <TextInput style={styles.searchInput} value={helpSearch} onChangeText={setHelpSearch} placeholder="Search help topics..." placeholderTextColor={c.textMuted} />
@@ -456,6 +503,12 @@ export default function SettingsScreen() {
       {activeSection === "about" && renderAboutSection()}
       {activeSection === "brand" && renderBrandSection()}
       {activeSection === "help" && renderHelpSection()}
+
+      <BrandGuideViewer
+        visible={brandGuideVisible}
+        onClose={() => setBrandGuideVisible(false)}
+        onUseAsTemplate={handleUseAsTemplate}
+      />
     </ScrollView>
   );
 }
@@ -588,4 +641,31 @@ const styles = StyleSheet.create({
   emptyState: { alignItems: "center", paddingTop: 60, gap: spacing.md },
   emptyText: { fontFamily: fonts.regular, fontSize: 14, color: c.textMuted },
   clearSearch: { fontFamily: fonts.medium, fontSize: 14, color: c.tint },
+  brandGuideCard: {
+    marginHorizontal: spacing.xl,
+    backgroundColor: c.surface,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: c.tint + "40",
+    marginBottom: spacing.xxl,
+    flexDirection: "row",
+    gap: spacing.lg,
+  },
+  brandGuideCardIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.md,
+    backgroundColor: c.tint + "15",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  brandGuideCardContent: { flex: 1 },
+  brandGuideCardTitle: { fontFamily: fonts.semibold, fontSize: 15, color: c.text, marginBottom: 4 },
+  brandGuideCardDesc: { fontFamily: fonts.regular, fontSize: 12, color: c.textSecondary, lineHeight: 17, marginBottom: spacing.md },
+  brandGuideCardFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  brandGuideCardBadge: { backgroundColor: c.tint + "20", paddingHorizontal: spacing.sm, paddingVertical: 3, borderRadius: 4 },
+  brandGuideCardBadgeText: { fontFamily: fonts.medium, fontSize: 10, color: c.tint },
+  brandGuideCardAction: { flexDirection: "row", alignItems: "center", gap: 4 },
+  brandGuideCardActionText: { fontFamily: fonts.medium, fontSize: 12, color: c.tint },
 });
