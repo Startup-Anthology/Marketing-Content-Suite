@@ -91,6 +91,23 @@ Generated Zod schemas from the OpenAPI spec (e.g. `HealthCheckResponse`). Used b
 
 Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHealthCheck`, `healthCheck`).
 
+### `artifacts/mockup-sandbox` (`@workspace/mockup-sandbox`)
+
+Isolated frontend sandbox for UI prototyping. Components are rendered via a Vite dev server, with each component getting a `/preview/{folder}/{ComponentName}` route for canvas iframe embedding.
+
+- **Brand Guide Boards** (`src/components/mockups/brand-guide/`):
+  - `BrandVoice.tsx` — Brand Overview & Voice (tagline, mission, voice characteristics, tone spectrum, do/don't)
+  - `AudiencePositioning.tsx` — Audience & Positioning (B2C/B2B segments, brand principles)
+  - `ColorSystem.tsx` — Color System (core palette, UI colors, shade ramps, WCAG contrast audit)
+  - `Typography.tsx` — Typography (type hierarchy with live specimens, font pairing rationale, licensing)
+  - `LogoIdentity.tsx` — Logo & Identity (all logo variants on light/dark backgrounds, usage rules)
+  - `DesignPatterns.tsx` — Design Patterns & Brand in Action (buttons, spacing, radius, mockup applications)
+  - `_group.css` — Shared CSS variables and font imports for brand guide components
+
+- **Brand Assets** (`public/images/logos/`): 9 logo files (vertical/horizontal, black/white/gold variants)
+- **Fonts loaded in index.html**: Hanken Grotesk, Lato, League Spartan, Lora, Montserrat, Inter (+ 20+ bundled fonts)
+- **Brand Colors**: SA Gold #BB935B, Dark Navy #0F1729, White #FFFFFF, Black #000000, Gray #999999
+
 ### `scripts` (`@workspace/scripts`)
 
 Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
