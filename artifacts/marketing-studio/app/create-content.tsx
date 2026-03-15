@@ -1,12 +1,15 @@
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import * as Clipboard from "expo-clipboard";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Platform,
   Pressable,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   TextInput,
@@ -51,6 +54,31 @@ export default function CreateContentScreen() {
       if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     },
   });
+
+  const handleCopy = async () => {
+    const text = `${title}\n\n${body}`;
+    if (Platform.OS === "web") {
+      await navigator.clipboard.writeText(text);
+    } else {
+      await Clipboard.setStringAsync(text);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+    Alert.alert("Copied", "Content copied to clipboard");
+  };
+
+  const handleShare = async () => {
+    const text = `${title}\n\n${body}`;
+    if (Platform.OS === "web") {
+      if (navigator.share) {
+        await navigator.share({ title, text });
+      } else {
+        await navigator.clipboard.writeText(text);
+        Alert.alert("Copied", "Content copied to clipboard (sharing not available on this browser)");
+      }
+    } else {
+      await Share.share({ title, message: text });
+    }
+  };
 
   const typeLabel =
     type === "social"
@@ -188,6 +216,33 @@ export default function CreateContentScreen() {
         textAlignVertical="top"
       />
 
+      {body.trim() !== "" && (
+        <View style={styles.actionRow}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.actionButton,
+              pressed && { opacity: 0.7 },
+            ]}
+            onPress={handleCopy}
+            testID="copy-content"
+          >
+            <Feather name="copy" size={16} color={c.tint} />
+            <Text style={styles.actionButtonText}>Copy</Text>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.actionButton,
+              pressed && { opacity: 0.7 },
+            ]}
+            onPress={handleShare}
+            testID="share-content"
+          >
+            <Feather name="share-2" size={16} color={c.tint} />
+            <Text style={styles.actionButtonText}>Share</Text>
+          </Pressable>
+        </View>
+      )}
+
       <Pressable
         style={({ pressed }) => [
           styles.saveButton,
@@ -319,6 +374,28 @@ const styles = StyleSheet.create({
     minHeight: 160,
     paddingTop: spacing.md,
   },
+  actionRow: {
+    flexDirection: "row",
+    gap: spacing.md,
+    marginTop: spacing.lg,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
+    paddingVertical: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: c.tint,
+    backgroundColor: c.background,
+  },
+  actionButtonText: {
+    fontFamily: fonts.semibold,
+    fontSize: 14,
+    color: c.tint,
+  },
   saveButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -327,7 +404,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
     borderRadius: radius.md,
     gap: spacing.sm,
-    marginTop: spacing.xxl,
+    marginTop: spacing.lg,
   },
   saveButtonText: {
     fontFamily: fonts.semibold,

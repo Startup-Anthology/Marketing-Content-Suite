@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Platform,
   Pressable,
   ScrollView,
@@ -21,6 +22,19 @@ import { aiSeoResearch, createResearchNote, fetchResearchNotes } from "@/lib/api
 const c = Colors.light;
 
 type TabKey = "seo" | "strategy";
+
+interface PersonaField {
+  name: string;
+  role: string;
+  painPoints: string;
+  goals: string;
+  channels: string;
+}
+
+interface BudgetItem {
+  category: string;
+  monthlyAmount: string;
+}
 
 const HMW_PROMPTS = [
   "How might we differentiate from well-funded competitors?",
@@ -44,6 +58,23 @@ export default function ResearchTab() {
     aeoSummary: string;
   } | null>(null);
 
+  const [persona, setPersona] = useState<PersonaField>({
+    name: "",
+    role: "",
+    painPoints: "",
+    goals: "",
+    channels: "",
+  });
+
+  const DEFAULT_BUDGET: BudgetItem[] = [
+    { category: "Content Creation", monthlyAmount: "" },
+    { category: "Paid Ads", monthlyAmount: "" },
+    { category: "SEO Tools", monthlyAmount: "" },
+    { category: "Design / Brand", monthlyAmount: "" },
+    { category: "Community / Events", monthlyAmount: "" },
+  ];
+  const [budget, setBudget] = useState<BudgetItem[]>(DEFAULT_BUDGET);
+
   const { data: notes = [] } = useQuery({
     queryKey: ["research-notes"],
     queryFn: fetchResearchNotes,
@@ -58,11 +89,12 @@ export default function ResearchTab() {
   });
 
   const saveMutation = useMutation({
-    mutationFn: (content: string) =>
-      createResearchNote("seo", topic, content),
+    mutationFn: (params: { category: string; topic: string; content: string }) =>
+      createResearchNote(params.category, params.topic, params.content),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["research-notes"] });
       if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert("Saved", "Research note saved successfully");
     },
   });
 
@@ -166,7 +198,7 @@ export default function ResearchTab() {
               pressed && { opacity: 0.8 },
             ]}
             onPress={() =>
-              saveMutation.mutate(JSON.stringify(seoResults))
+              saveMutation.mutate({ category: "seo", topic, content: JSON.stringify(seoResults) })
             }
           >
             <Feather name="save" size={16} color={c.tint} />
@@ -177,11 +209,149 @@ export default function ResearchTab() {
     </ScrollView>
   );
 
+  const updateBudget = (index: number, amount: string) => {
+    setBudget((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, monthlyAmount: amount } : item))
+    );
+  };
+
+  const budgetTotal = budget.reduce(
+    (sum, item) => sum + (parseFloat(item.monthlyAmount) || 0),
+    0
+  );
+
   const renderStrategyTab = () => (
     <ScrollView
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}
     >
+      <View style={styles.strategySection}>
+        <View style={styles.strategySectionHeader}>
+          <Feather name="user" size={18} color={c.tint} />
+          <Text style={styles.strategySectionTitle}>Persona Builder</Text>
+        </View>
+        <Text style={styles.strategySectionDesc}>
+          Define your ideal customer to sharpen messaging
+        </Text>
+        <View style={styles.personaCard}>
+          <Text style={styles.personaLabel}>Persona Name</Text>
+          <TextInput
+            style={styles.personaInput}
+            placeholder="e.g., Bootstrapped Ben"
+            placeholderTextColor={c.textMuted}
+            value={persona.name}
+            onChangeText={(v) => setPersona((p) => ({ ...p, name: v }))}
+          />
+          <Text style={styles.personaLabel}>Role / Title</Text>
+          <TextInput
+            style={styles.personaInput}
+            placeholder="e.g., Solo founder, pre-revenue SaaS"
+            placeholderTextColor={c.textMuted}
+            value={persona.role}
+            onChangeText={(v) => setPersona((p) => ({ ...p, role: v }))}
+          />
+          <Text style={styles.personaLabel}>Pain Points</Text>
+          <TextInput
+            style={[styles.personaInput, { minHeight: 60 }]}
+            placeholder="What keeps them up at night?"
+            placeholderTextColor={c.textMuted}
+            value={persona.painPoints}
+            onChangeText={(v) => setPersona((p) => ({ ...p, painPoints: v }))}
+            multiline
+            textAlignVertical="top"
+          />
+          <Text style={styles.personaLabel}>Goals</Text>
+          <TextInput
+            style={[styles.personaInput, { minHeight: 60 }]}
+            placeholder="What are they trying to achieve?"
+            placeholderTextColor={c.textMuted}
+            value={persona.goals}
+            onChangeText={(v) => setPersona((p) => ({ ...p, goals: v }))}
+            multiline
+            textAlignVertical="top"
+          />
+          <Text style={styles.personaLabel}>Preferred Channels</Text>
+          <TextInput
+            style={styles.personaInput}
+            placeholder="e.g., LinkedIn, Twitter, newsletters"
+            placeholderTextColor={c.textMuted}
+            value={persona.channels}
+            onChangeText={(v) => setPersona((p) => ({ ...p, channels: v }))}
+          />
+          <Pressable
+            style={({ pressed }) => [
+              styles.saveButton,
+              pressed && { opacity: 0.8 },
+              !persona.name.trim() && { opacity: 0.5 },
+            ]}
+            onPress={() =>
+              saveMutation.mutate({
+                category: "persona",
+                topic: persona.name,
+                content: JSON.stringify(persona),
+              })
+            }
+            disabled={!persona.name.trim()}
+          >
+            <Feather name="save" size={16} color={c.tint} />
+            <Text style={styles.saveButtonText}>Save Persona</Text>
+          </Pressable>
+        </View>
+      </View>
+
+      <View style={styles.strategySection}>
+        <View style={styles.strategySectionHeader}>
+          <MaterialCommunityIcons name="cash-multiple" size={20} color={c.tint} />
+          <Text style={styles.strategySectionTitle}>Budget Planner</Text>
+        </View>
+        <Text style={styles.strategySectionDesc}>
+          Plan your bootstrapped marketing spend
+        </Text>
+        <View style={styles.budgetCard}>
+          {budget.map((item, index) => (
+            <View key={item.category} style={styles.budgetRow}>
+              <Text style={styles.budgetCategory}>{item.category}</Text>
+              <View style={styles.budgetInputWrap}>
+                <Text style={styles.budgetCurrency}>$</Text>
+                <TextInput
+                  style={styles.budgetInput}
+                  placeholder="0"
+                  placeholderTextColor={c.textMuted}
+                  keyboardType="numeric"
+                  value={item.monthlyAmount}
+                  onChangeText={(v) => updateBudget(index, v)}
+                />
+                <Text style={styles.budgetPeriod}>/mo</Text>
+              </View>
+            </View>
+          ))}
+          <View style={styles.budgetTotalRow}>
+            <Text style={styles.budgetTotalLabel}>Total Monthly</Text>
+            <Text style={styles.budgetTotalAmount}>
+              ${budgetTotal.toLocaleString()}
+            </Text>
+          </View>
+          <Pressable
+            style={({ pressed }) => [
+              styles.saveButton,
+              pressed && { opacity: 0.8 },
+              budgetTotal === 0 && { opacity: 0.5 },
+            ]}
+            onPress={() =>
+              saveMutation.mutate({
+                category: "budget",
+                topic: `Monthly Budget Plan ($${budgetTotal})`,
+                content: JSON.stringify(budget),
+              })
+            }
+            disabled={budgetTotal === 0}
+          >
+            <Feather name="save" size={16} color={c.tint} />
+            <Text style={styles.saveButtonText}>Save Budget</Text>
+          </Pressable>
+        </View>
+      </View>
+
       <View style={styles.strategySection}>
         <View style={styles.strategySectionHeader}>
           <MaterialCommunityIcons name="lightbulb-outline" size={20} color={c.tint} />
@@ -201,7 +371,7 @@ export default function ResearchTab() {
 
       <View style={styles.strategySection}>
         <View style={styles.strategySectionHeader}>
-          <Feather name="users" size={18} color={c.tint} />
+          <Feather name="bookmark" size={18} color={c.tint} />
           <Text style={styles.strategySectionTitle}>Saved Notes</Text>
         </View>
         {notes.length === 0 ? (
@@ -433,6 +603,98 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: c.text,
     lineHeight: 22,
+  },
+  personaCard: {
+    backgroundColor: c.surface,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: c.border,
+  },
+  personaLabel: {
+    fontFamily: fonts.medium,
+    fontSize: 12,
+    color: c.textSecondary,
+    marginBottom: spacing.xs,
+    marginTop: spacing.md,
+  },
+  personaInput: {
+    backgroundColor: c.inputBg,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    fontFamily: fonts.regular,
+    fontSize: 14,
+    color: c.text,
+    borderWidth: 1,
+    borderColor: c.border,
+  },
+  budgetCard: {
+    backgroundColor: c.surface,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: c.border,
+  },
+  budgetRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: c.border,
+  },
+  budgetCategory: {
+    fontFamily: fonts.medium,
+    fontSize: 14,
+    color: c.text,
+    flex: 1,
+  },
+  budgetInputWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: c.inputBg,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.sm,
+    borderWidth: 1,
+    borderColor: c.border,
+  },
+  budgetCurrency: {
+    fontFamily: fonts.medium,
+    fontSize: 14,
+    color: c.tint,
+  },
+  budgetInput: {
+    fontFamily: fonts.regular,
+    fontSize: 14,
+    color: c.text,
+    width: 60,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.xs,
+    textAlign: "right",
+  },
+  budgetPeriod: {
+    fontFamily: fonts.regular,
+    fontSize: 12,
+    color: c.textMuted,
+  },
+  budgetTotalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingTop: spacing.md,
+    marginTop: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  budgetTotalLabel: {
+    fontFamily: fonts.semibold,
+    fontSize: 15,
+    color: c.text,
+  },
+  budgetTotalAmount: {
+    fontFamily: fonts.bold,
+    fontSize: 18,
+    color: c.tint,
   },
   emptyMini: {
     paddingVertical: spacing.xl,

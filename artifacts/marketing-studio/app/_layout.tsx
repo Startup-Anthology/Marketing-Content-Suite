@@ -15,6 +15,7 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import Colors from "@/constants/colors";
 
 SplashScreen.preventAutoHideAsync();
@@ -80,12 +81,14 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <GestureHandlerRootView>
-            <KeyboardProvider>
-              <StatusBar style="light" />
-              <RootLayoutNav />
-            </KeyboardProvider>
-          </GestureHandlerRootView>
+          <ThemeProvider>
+            <GestureHandlerRootView>
+              <KeyboardProvider>
+                <StatusBar style="light" />
+                <RootLayoutNav />
+              </KeyboardProvider>
+            </GestureHandlerRootView>
+          </ThemeProvider>
         </QueryClientProvider>
       </ErrorBoundary>
     </SafeAreaProvider>

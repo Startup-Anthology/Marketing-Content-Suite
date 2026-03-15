@@ -1,4 +1,5 @@
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import type { ComponentProps } from "react";
 import React from "react";
 import {
   Platform,
@@ -14,11 +15,22 @@ import { fonts, spacing, radius } from "@/constants/theme";
 
 const c = Colors.light;
 
+type MCIName = ComponentProps<typeof MaterialCommunityIcons>["name"];
+
 const BRAND_COLORS = [
   { name: "SA Gold", hex: "#BB935B" },
   { name: "Dark Navy", hex: "#0F1729" },
   { name: "White", hex: "#FFFFFF" },
   { name: "Slate", hex: "#64748B" },
+];
+
+const SUPPORTED_PLATFORMS: { name: string; icon: MCIName }[] = [
+  { name: "LinkedIn", icon: "linkedin" },
+  { name: "X / Twitter", icon: "twitter" },
+  { name: "Instagram", icon: "instagram" },
+  { name: "Email", icon: "email-outline" },
+  { name: "TikTok", icon: "music-note" },
+  { name: "YouTube", icon: "youtube" },
 ];
 
 export default function SettingsTab() {
@@ -86,17 +98,10 @@ export default function SettingsTab() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Supported Platforms</Text>
         <View style={styles.platformGrid}>
-          {[
-            { name: "LinkedIn", icon: "linkedin" },
-            { name: "X / Twitter", icon: "twitter" },
-            { name: "Instagram", icon: "instagram" },
-            { name: "Email", icon: "email-outline" },
-            { name: "TikTok", icon: "music-note" },
-            { name: "YouTube", icon: "youtube" },
-          ].map((p) => (
+          {SUPPORTED_PLATFORMS.map((p) => (
             <View key={p.name} style={styles.platformItem}>
               <MaterialCommunityIcons
-                name={p.icon as any}
+                name={p.icon}
                 size={20}
                 color={c.tint}
               />

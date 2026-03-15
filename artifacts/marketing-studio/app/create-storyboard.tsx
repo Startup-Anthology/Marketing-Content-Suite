@@ -85,6 +85,24 @@ export default function CreateStoryboardScreen() {
     setScenes((prev) => prev.filter((s) => s.id !== id));
   };
 
+  const moveSceneUp = (index: number) => {
+    if (index === 0) return;
+    setScenes((prev) => {
+      const next = [...prev];
+      [next[index - 1], next[index]] = [next[index], next[index - 1]];
+      return next;
+    });
+  };
+
+  const moveSceneDown = (index: number) => {
+    if (index >= scenes.length - 1) return;
+    setScenes((prev) => {
+      const next = [...prev];
+      [next[index], next[index + 1]] = [next[index + 1], next[index]];
+      return next;
+    });
+  };
+
   const canSave = isAd
     ? title.trim() && hook.trim()
     : title.trim() && scenes.length > 0;
@@ -198,9 +216,31 @@ export default function CreateStoryboardScreen() {
                 <View style={styles.sceneNumber}>
                   <Text style={styles.sceneNumberText}>{index + 1}</Text>
                 </View>
-                <Pressable onPress={() => removeScene(scene.id)}>
-                  <Feather name="x" size={18} color={c.textMuted} />
-                </Pressable>
+                <View style={styles.sceneActions}>
+                  <Pressable
+                    onPress={() => moveSceneUp(index)}
+                    style={[
+                      styles.reorderBtn,
+                      index === 0 && { opacity: 0.3 },
+                    ]}
+                    disabled={index === 0}
+                  >
+                    <Feather name="chevron-up" size={18} color={c.textSecondary} />
+                  </Pressable>
+                  <Pressable
+                    onPress={() => moveSceneDown(index)}
+                    style={[
+                      styles.reorderBtn,
+                      index >= scenes.length - 1 && { opacity: 0.3 },
+                    ]}
+                    disabled={index >= scenes.length - 1}
+                  >
+                    <Feather name="chevron-down" size={18} color={c.textSecondary} />
+                  </Pressable>
+                  <Pressable onPress={() => removeScene(scene.id)}>
+                    <Feather name="x" size={18} color={c.textMuted} />
+                  </Pressable>
+                </View>
               </View>
               <TextInput
                 style={styles.sceneInput}
@@ -368,6 +408,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: spacing.sm,
+  },
+  sceneActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+  },
+  reorderBtn: {
+    padding: 2,
   },
   sceneNumber: {
     width: 28,
