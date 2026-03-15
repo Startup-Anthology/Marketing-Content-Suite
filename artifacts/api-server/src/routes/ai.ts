@@ -23,19 +23,62 @@ function extractJSON(text: string): Record<string, unknown> {
   return JSON.parse(text);
 }
 
+const contentTypeFrameworks: Record<string, string> = {
+  "social-post": `Structure for social posts:
+- Hook: Open with a bold statement, question, or surprising stat (first 1-2 lines are critical for stopping the scroll)
+- Value: Deliver a clear insight, tip, or story in 2-4 concise lines
+- CTA: End with a question, invitation, or call-to-action that drives engagement
+- Platform rules: LinkedIn favors thought leadership with line breaks; Twitter/X demands punchy brevity under 280 chars; Instagram rewards storytelling with emoji cadence; TikTok captions should feel like spoken word`,
+  newsletter: `Structure for newsletters (email best practices):
+- Subject line: 6-10 words, curiosity-driven or benefit-led, avoid spam triggers
+- Preview text: Complement the subject line, don't repeat it
+- Opening hook: Personal anecdote, bold claim, or timely reference in 1-2 sentences
+- Body: Use the inverted pyramid — lead with the most valuable insight, expand with supporting points, use subheadings and bullet points for scannability
+- Sections: Break into 2-3 digestible sections with clear headers
+- CTA: One primary call-to-action per email, visually distinct, action-oriented verb
+- Sign-off: Brief, warm, on-brand closing
+- P.S. line: Optional secondary CTA or personal note (high-read area)`,
+  caption: `Structure for captions:
+- Hook line: First sentence must stop the scroll — use a bold claim, relatable pain point, or unexpected angle
+- Body: Tell a micro-story or deliver a quick framework (3-5 points max)
+- Hashtags: 5-15 relevant hashtags mixing broad reach and niche targeting
+- CTA: Ask a specific question or prompt a save/share action`,
+  "blog-post": `Structure for blog posts (case study / thought leadership framework):
+- Headline: Benefit-driven, specific, uses power words — aim for 60-70 characters for SEO
+- Meta description: 150-160 characters summarizing the value proposition
+- Opening: Start with a relatable problem, surprising statistic, or bold assertion
+- Framework: Use the Problem-Agitation-Solution (PAS) or Situation-Task-Action-Result (STAR) structure
+- Subheadings: H2/H3 hierarchy, each scannable and value-packed
+- Evidence: Include data points, examples, mini case studies, or expert quotes
+- Takeaways: Summarize key learnings in a bulleted list
+- CTA: Clear next step — subscribe, download, try, share
+- SEO: Naturally integrate primary keyword in title, first paragraph, one subheading, and conclusion`,
+};
+
 router.post("/ai/generate-draft", async (req, res) => {
   const { type, platform, topic, tone, additionalContext } = req.body;
 
   const brandContext = await getBrandContextBlock();
+  const framework = contentTypeFrameworks[type] || contentTypeFrameworks["social-post"];
 
-  const systemPrompt = `You are a marketing content expert. Generate polished, ready-to-use ${type} content for ${platform}.
-${brandContext ? `\n${brandContext}\n` : `Brand voice: Professional yet approachable, authoritative but not stuffy. Think "smart friend who happens to be a marketing expert."`}
-${tone ? `Tone: ${tone}` : ""}
+  const systemPrompt = `You are a senior marketing strategist and content creator for startup founders. Generate polished, publish-ready ${type} content optimized for ${platform}.
+
+${brandContext ? `${brandContext}\n` : `Brand voice: Professional yet approachable, authoritative but not stuffy. Think "smart friend who happens to be a marketing expert."\n`}
+${framework}
+
+${tone ? `Tone: ${tone}` : "Tone: Confident, value-driven, actionable"}
 ${additionalContext ? `Additional context: ${additionalContext}` : ""}
+
+Content principles:
+- Lead with value, not self-promotion
+- Use concrete examples over abstract advice
+- Write at a 7th-grade reading level for clarity
+- Every sentence must earn its place — cut filler words
+- Match the platform's native content style and character limits
 
 You MUST respond with ONLY a valid JSON object (no markdown, no backticks, no extra text) with these fields:
 - "draft": the complete content piece (string)
-- "suggestions": array of 3 improvement tips (strings)`;
+- "suggestions": array of 3 specific, actionable improvement tips (strings) — e.g., A/B test alternatives, engagement boosters, distribution tactics`;
 
   try {
     const content = await callClaude(systemPrompt, `Write a ${type} about: ${topic}`);
