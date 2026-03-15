@@ -207,7 +207,7 @@ export default function SettingsScreen() {
     <>
       <View style={styles.brandCard}>
         <View style={styles.brandIconWrap}>
-          <MaterialCommunityIcons name="book-open-variant" size={28} color={c.tint} />
+          <Image source={require("@/assets/sa-icon-white.png")} style={styles.brandLogoImg} resizeMode="contain" />
         </View>
         <Text style={styles.brandName}>Startup Anthology</Text>
         <Text style={styles.brandTagline}>Build. Ship. Grow. Repeat.</Text>
@@ -680,6 +680,7 @@ const styles = StyleSheet.create({
     backgroundColor: c.tint + "15",
     alignItems: "center", justifyContent: "center", marginBottom: spacing.md,
   },
+  brandLogoImg: { width: 36, height: 36 },
   brandName: { fontFamily: fonts.bold, fontSize: 20, color: c.text },
   brandTagline: { fontFamily: fonts.regular, fontSize: 14, color: c.tint, marginTop: 4 },
   section: { marginHorizontal: spacing.xl, marginBottom: spacing.xxl },
