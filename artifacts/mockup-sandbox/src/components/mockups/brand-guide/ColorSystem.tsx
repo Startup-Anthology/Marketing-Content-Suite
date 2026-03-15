@@ -7,6 +7,72 @@ function hexToRgb(hex: string) {
   return { r, g, b };
 }
 
+function srgbToLinear(c: number) {
+  return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+}
+
+function linearToSrgb(c: number) {
+  return c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+}
+
+function hexToOklch(hex: string): [number, number, number] {
+  const { r, g, b } = hexToRgb(hex);
+  const lr = srgbToLinear(r / 255);
+  const lg = srgbToLinear(g / 255);
+  const lb = srgbToLinear(b / 255);
+  const l_ = 0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb;
+  const m_ = 0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb;
+  const s_ = 0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb;
+  const l1 = Math.cbrt(l_);
+  const m1 = Math.cbrt(m_);
+  const s1 = Math.cbrt(s_);
+  const L = 0.2104542553 * l1 + 0.7936177850 * m1 - 0.0040720468 * s1;
+  const a = 1.9779984951 * l1 - 2.4285922050 * m1 + 0.4505937099 * s1;
+  const bk = 0.0259040371 * l1 + 0.7827717662 * m1 - 0.8086757660 * s1;
+  const C = Math.sqrt(a * a + bk * bk);
+  const H = ((Math.atan2(bk, a) * 180) / Math.PI + 360) % 360;
+  return [L, C, H];
+}
+
+function oklchToHex(L: number, C: number, H: number): string {
+  const hRad = (H * Math.PI) / 180;
+  const a = C * Math.cos(hRad);
+  const b = C * Math.sin(hRad);
+  const l1 = L + 0.3963377774 * a + 0.2158037573 * b;
+  const m1 = L - 0.1055613458 * a - 0.0638541728 * b;
+  const s1 = L - 0.0894841775 * a - 1.2914855480 * b;
+  const l_ = l1 * l1 * l1;
+  const m_ = m1 * m1 * m1;
+  const s_ = s1 * s1 * s1;
+  let lr = +4.0767416621 * l_ - 3.3077115913 * m_ + 0.2309699292 * s_;
+  let lg = -1.2684380046 * l_ + 2.6097574011 * m_ - 0.3413193965 * s_;
+  let lb = -0.0041960863 * l_ - 0.7034186147 * m_ + 1.7076147010 * s_;
+  lr = Math.max(0, Math.min(1, linearToSrgb(Math.max(0, lr))));
+  lg = Math.max(0, Math.min(1, linearToSrgb(Math.max(0, lg))));
+  lb = Math.max(0, Math.min(1, linearToSrgb(Math.max(0, lb))));
+  const toHex = (v: number) => Math.round(v * 255).toString(16).padStart(2, '0');
+  return `#${toHex(lr)}${toHex(lg)}${toHex(lb)}`;
+}
+
+function generateShadesOklch(baseHex: string) {
+  const [baseL, baseC, baseH] = hexToOklch(baseHex);
+  const steps = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900];
+  return steps.map(step => {
+    const t = step / 500;
+    let L: number, C: number;
+    if (t < 1) {
+      L = baseL + (1 - baseL) * (1 - t);
+      C = baseC * t;
+    } else {
+      L = baseL * (1 - (t - 1));
+      C = baseC * (1 - (t - 1) * 0.5);
+    }
+    L = Math.max(0, Math.min(1, L));
+    C = Math.max(0, C);
+    return { step, hex: oklchToHex(L, C, baseH) };
+  });
+}
+
 function relativeLuminance(hex: string) {
   const { r, g, b } = hexToRgb(hex);
   const [rs, gs, bs] = [r / 255, g / 255, b / 255].map(c =>
@@ -37,30 +103,6 @@ const uiColors = [
   { name: "Border", hex: "#E2E8F0", usage: "Card borders, dividers" },
 ];
 
-function generateShades(baseHex: string, name: string) {
-  const { r, g, b } = hexToRgb(baseHex);
-  const shades: { step: number; hex: string }[] = [];
-  const steps = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900];
-  steps.forEach(step => {
-    const factor = step / 500;
-    let nr, ng, nb;
-    if (step < 500) {
-      const mix = 1 - factor;
-      nr = Math.round(r + (255 - r) * mix);
-      ng = Math.round(g + (255 - g) * mix);
-      nb = Math.round(b + (255 - b) * mix);
-    } else {
-      const mix = (factor - 1);
-      nr = Math.round(r * (1 - mix));
-      ng = Math.round(g * (1 - mix));
-      nb = Math.round(b * (1 - mix));
-    }
-    const hex = `#${nr.toString(16).padStart(2, '0')}${ng.toString(16).padStart(2, '0')}${nb.toString(16).padStart(2, '0')}`;
-    shades.push({ step, hex });
-  });
-  return shades;
-}
-
 const contrastPairs = [
   { fg: "#0F1729", bg: "#FFFFFF", label: "Navy on White" },
   { fg: "#FFFFFF", bg: "#0F1729", label: "White on Navy" },
@@ -72,8 +114,8 @@ const contrastPairs = [
   { fg: "#999999", bg: "#FFFFFF", label: "Gray on White" },
 ];
 
-const goldShades = generateShades("#BB935B", "SA Gold");
-const navyShades = generateShades("#0F1729", "Dark Navy");
+const goldShades = generateShadesOklch("#BB935B");
+const navyShades = generateShadesOklch("#0F1729");
 
 export function ColorSystem() {
   return (
@@ -115,7 +157,7 @@ export function ColorSystem() {
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 40 }}>
           <div>
-            <h2 style={{ fontFamily: "'League Spartan', sans-serif", fontSize: 20, fontWeight: 700, marginBottom: 12 }}>SA Gold Ramp</h2>
+            <h2 style={{ fontFamily: "'League Spartan', sans-serif", fontSize: 20, fontWeight: 700, marginBottom: 12 }}>SA Gold Ramp <span style={{ fontSize: 11, fontWeight: 400, color: '#999', fontFamily: "'Roboto Mono', monospace" }}>(OKLCH interpolation)</span></h2>
             <div style={{ display: 'flex', borderRadius: 8, overflow: 'hidden', border: '1px solid #E2E8F0' }}>
               {goldShades.map((s) => (
                 <div key={s.step} style={{ flex: 1, textAlign: 'center' }}>
@@ -129,7 +171,7 @@ export function ColorSystem() {
             </div>
           </div>
           <div>
-            <h2 style={{ fontFamily: "'League Spartan', sans-serif", fontSize: 20, fontWeight: 700, marginBottom: 12 }}>Dark Navy Ramp</h2>
+            <h2 style={{ fontFamily: "'League Spartan', sans-serif", fontSize: 20, fontWeight: 700, marginBottom: 12 }}>Dark Navy Ramp <span style={{ fontSize: 11, fontWeight: 400, color: '#999', fontFamily: "'Roboto Mono', monospace" }}>(OKLCH interpolation)</span></h2>
             <div style={{ display: 'flex', borderRadius: 8, overflow: 'hidden', border: '1px solid #E2E8F0' }}>
               {navyShades.map((s) => (
                 <div key={s.step} style={{ flex: 1, textAlign: 'center' }}>

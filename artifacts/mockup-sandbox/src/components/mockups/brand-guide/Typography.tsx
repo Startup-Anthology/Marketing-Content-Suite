@@ -5,8 +5,8 @@ const typeHierarchy = [
   { purpose: "Subtitle", font: "Montserrat", weight: "Regular Italic", size: "24px", lineHeight: "1.3", source: "Google Fonts", sample: "The tool for people who'd rather run their business" },
   { purpose: "Heading", font: "League Spartan", weight: "Regular (700)", size: "30px", lineHeight: "1.2", source: "Google Fonts", sample: "Built for Every Business Model" },
   { purpose: "Subheading", font: "HK Grotesk / Inter", weight: "Regular", size: "20px", lineHeight: "1.4", source: "Google / Fallback", sample: "Custom Revenue Models That Match Your Business" },
-  { purpose: "Section Header", font: "Montserrat", weight: "Regular (600)", size: "18px", lineHeight: "1.4", source: "Google Fonts", sample: "BETA ACCESS — $25/MONTH" },
-  { purpose: "Body", font: "Hanken Grotesk", weight: "Regular", size: "16px", lineHeight: "1.6", source: "Google Fonts", sample: "Horizon handles the financial modeling so you can focus on running your business. Get forecasts you can trust, KPIs that actually help you decide, and professional financial statements." },
+  { purpose: "Section Header", font: "Gotham / Montserrat", weight: "Regular (600)", size: "18px", lineHeight: "1.4", source: "Adobe / Fallback", sample: "BETA ACCESS — $25/MONTH" },
+  { purpose: "Body", font: "Montserrat", weight: "Regular", size: "16px", lineHeight: "1.6", source: "Google Fonts", sample: "Horizon handles the financial modeling so you can focus on running your business. Get forecasts you can trust, KPIs that actually help you decide, and professional financial statements." },
   { purpose: "Quote", font: "Lora", weight: "Italic", size: "18px", lineHeight: "1.6", source: "Google Fonts", sample: '"See your financial reality clearly, not through rose-colored glasses"' },
   { purpose: "Caption", font: "Montserrat", weight: "Regular", size: "12px", lineHeight: "1.4", source: "Google Fonts", sample: "Limited slots available. Cancel anytime." },
 ];
@@ -15,8 +15,8 @@ const fontMap: Record<string, string> = {
   "Lato": "'Lato', sans-serif",
   "Montserrat": "'Montserrat', sans-serif",
   "League Spartan": "'League Spartan', sans-serif",
-  "HK Grotesk / Inter": "'Inter', 'HK Grotesk', sans-serif",
-  "Hanken Grotesk": "'Hanken Grotesk', sans-serif",
+  "HK Grotesk / Inter": "'Hanken Grotesk', 'Inter', sans-serif",
+  "Gotham / Montserrat": "'Montserrat', sans-serif",
   "Lora": "'Lora', serif",
 };
 
@@ -79,13 +79,13 @@ export function Typography() {
                 <strong style={{ color: '#0F1729' }}>League Spartan</strong> provides bold, geometric headings that command attention and establish hierarchy.
               </p>
               <p style={{ fontSize: 14, color: '#5C6B7F', lineHeight: 1.6, margin: '0 0 12px' }}>
-                <strong style={{ color: '#0F1729' }}>Hanken Grotesk</strong> is the primary body font — clean, modern, and highly readable at all sizes.
-              </p>
-              <p style={{ fontSize: 14, color: '#5C6B7F', lineHeight: 1.6, margin: '0 0 12px' }}>
                 <strong style={{ color: '#0F1729' }}>Lato</strong> serves as the title font with bold italic styling for maximum visual impact on hero sections.
               </p>
               <p style={{ fontSize: 14, color: '#5C6B7F', lineHeight: 1.6, margin: '0 0 12px' }}>
-                <strong style={{ color: '#0F1729' }}>Montserrat</strong> is versatile — used for subtitles, section headers, body, and captions with varying weights.
+                <strong style={{ color: '#0F1729' }}>Montserrat</strong> is the primary body font and versatile workhorse — used for subtitles, body text, section headers, and captions across different weights.
+              </p>
+              <p style={{ fontSize: 14, color: '#5C6B7F', lineHeight: 1.6, margin: '0 0 12px' }}>
+                <strong style={{ color: '#0F1729' }}>Gotham</strong> is the preferred section header font (Adobe licensed). When unavailable, Montserrat serves as the open-source fallback with similar geometric proportions.
               </p>
               <p style={{ fontSize: 14, color: '#5C6B7F', lineHeight: 1.6, margin: 0 }}>
                 <strong style={{ color: '#0F1729' }}>Lora</strong> adds editorial warmth for quotes and pull-quotes, contrasting the geometric sans-serif system.

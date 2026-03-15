@@ -2,9 +2,22 @@ import './_group.css';
 
 const logoVariants = [
   { name: "Vertical Badge (Icon Only)", description: "The standalone rocket icon badge without any text.", usage: "Compact spaces, social media profile pictures, and application icons where the brand is already established.", lightFile: "v-badge-black.png", darkFile: "icon-white.png" },
-  { name: "Vertical Badge + Wordmark", description: 'The icon badge positioned above the "STARTUP ANTHOLOGY" wordmark.', usage: "This is the primary logo and should be used in most applications.", lightFile: "v-badge-black-text.png", darkFile: "v-white.png" },
+  { name: "Vertical Badge + Wordmark (Black)", description: 'The icon badge positioned above the "STARTUP ANTHOLOGY" wordmark in black.', usage: "The primary logo for most light-background applications.", lightFile: "v-badge-black-text.png", darkFile: "v-white.png" },
   { name: "Vertical Badge + Gold Wordmark", description: "The icon badge with the wordmark in Startup Anthology Gold.", usage: "Reserved for premium materials or instances where special emphasis is desired.", lightFile: "v-badge-black-gold.png", darkFile: "v-badge-white-gold.png" },
+  { name: "Vertical Badge + Gold Background", description: "The vertical badge on a Startup Anthology Gold background.", usage: "Branded merchandise, signage, and high-visibility placements.", lightFile: "v-badge-black-gold-bg.png", darkFile: "v-badge-black-gold-bg.png" },
   { name: "Horizontal Badge + Wordmark", description: 'The icon badge positioned to the left of the "STARTUP ANTHOLOGY" wordmark.', usage: "Best for wide layouts such as website headers and banners.", lightFile: "h-badge-black.png", darkFile: "h-white.png" },
+];
+
+const allFiles = [
+  { file: "v-badge-black.png", label: "Vertical Badge (Black)" },
+  { file: "v-badge-black-text.png", label: "Vertical Badge + Text (Black)" },
+  { file: "v-badge-black-gold.png", label: "Vertical Badge + Gold Text" },
+  { file: "v-badge-black-gold-bg.png", label: "Vertical Badge on Gold BG" },
+  { file: "v-white.png", label: "Vertical (White)" },
+  { file: "v-badge-white-gold.png", label: "Vertical White + Gold Text" },
+  { file: "icon-white.png", label: "Icon Only (White)" },
+  { file: "h-badge-black.png", label: "Horizontal (Black)" },
+  { file: "h-white.png", label: "Horizontal (White)" },
 ];
 
 const incorrectUsage = [
@@ -98,6 +111,26 @@ export function LogoIdentity() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 40 }}>
+          <h2 style={{ fontFamily: "'League Spartan', sans-serif", fontSize: 20, fontWeight: 700, marginBottom: 12 }}>All 9 Logo Files</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+            {allFiles.map((f) => {
+              const isDark = f.file.includes('white') || f.file.includes('gold-bg');
+              return (
+                <div key={f.file} style={{ border: '1px solid #E2E8F0', borderRadius: 8, overflow: 'hidden' }}>
+                  <div style={{ background: isDark ? '#0F1729' : '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, minHeight: 80, border: isDark ? 'none' : '1px solid #F1F5F9' }}>
+                    <img src={`/__mockup/images/logos/${f.file}`} alt={f.label} style={{ maxHeight: 60, maxWidth: 180, objectFit: 'contain' }} />
+                  </div>
+                  <div style={{ padding: '8px 12px', background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 2 }}>{f.label}</div>
+                    <div style={{ fontSize: 10, fontFamily: "'Roboto Mono', monospace", color: '#999' }}>{f.file}</div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
