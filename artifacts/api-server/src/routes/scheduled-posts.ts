@@ -2,6 +2,12 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { scheduledPostsTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
+import {
+  isGoogleCalendarConnected,
+  createCalendarEvent,
+  updateCalendarEvent,
+  deleteCalendarEvent,
+} from "../services/google-calendar";
 
 const router = Router();
 
@@ -15,7 +21,22 @@ router.post("/scheduled-posts", async (req, res) => {
   const [item] = await db.insert(scheduledPostsTable).values({
     platform, content, scheduledAt: new Date(scheduledAt), status: status || "draft",
   }).returning();
-  res.status(201).json(item);
+
+  if (isGoogleCalendarConnected()) {
+    try {
+      await createCalendarEvent({
+        id: item.id,
+        platform: item.platform,
+        content: item.content,
+        scheduledAt: item.scheduledAt,
+      });
+    } catch (err) {
+      console.error("Failed to create calendar event:", err);
+    }
+  }
+
+  const [updated] = await db.select().from(scheduledPostsTable).where(eq(scheduledPostsTable.id, item.id));
+  res.status(201).json(updated || item);
 });
 
 router.get("/scheduled-posts/:id", async (req, res): Promise<void> => {
@@ -35,11 +56,48 @@ router.put("/scheduled-posts/:id", async (req, res): Promise<void> => {
   if (status !== undefined) updates.status = status;
   const [item] = await db.update(scheduledPostsTable).set(updates).where(eq(scheduledPostsTable.id, id)).returning();
   if (!item) { res.status(404).json({ error: "Not found" }); return; }
-  res.json(item);
+
+  if (isGoogleCalendarConnected() && item.googleCalendarEventId) {
+    try {
+      await updateCalendarEvent(item.googleCalendarEventId, {
+        platform: item.platform,
+        content: item.content,
+        scheduledAt: item.scheduledAt,
+      });
+    } catch (err) {
+      console.error("Failed to update calendar event:", err);
+    }
+  } else if (isGoogleCalendarConnected() && !item.googleCalendarEventId) {
+    try {
+      await createCalendarEvent({
+        id: item.id,
+        platform: item.platform,
+        content: item.content,
+        scheduledAt: item.scheduledAt,
+      });
+    } catch (err) {
+      console.error("Failed to create calendar event:", err);
+    }
+  }
+
+  const [refreshed] = await db.select().from(scheduledPostsTable).where(eq(scheduledPostsTable.id, id));
+  res.json(refreshed || item);
 });
 
 router.delete("/scheduled-posts/:id", async (req, res) => {
   const id = Number(req.params.id);
+
+  if (isGoogleCalendarConnected()) {
+    const [post] = await db.select().from(scheduledPostsTable).where(eq(scheduledPostsTable.id, id));
+    if (post?.googleCalendarEventId) {
+      try {
+        await deleteCalendarEvent(post.googleCalendarEventId);
+      } catch (err) {
+        console.error("Failed to delete calendar event:", err);
+      }
+    }
+  }
+
   await db.delete(scheduledPostsTable).where(eq(scheduledPostsTable.id, id));
   res.status(204).send();
 });

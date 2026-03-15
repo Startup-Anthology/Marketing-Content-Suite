@@ -1,9 +1,10 @@
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { router, useLocalSearchParams, useNavigation } from "expo-router";
+import React, { useState, useEffect } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Platform,
   Pressable,
   ScrollView,
@@ -16,7 +17,12 @@ import * as Haptics from "expo-haptics";
 
 import Colors from "@/constants/colors";
 import { fonts, spacing, radius, platformColors } from "@/constants/theme";
-import { createScheduledPost } from "@/lib/api";
+import {
+  createScheduledPost,
+  updateScheduledPost,
+  deleteScheduledPost,
+  fetchScheduledPost,
+} from "@/lib/api";
 
 const c = Colors.light;
 
@@ -28,20 +34,63 @@ const TIMES = [
 ];
 
 export default function CreatePostScreen() {
-  const { date: dateParam } = useLocalSearchParams<{ date: string }>();
+  const { date: dateParam, postId } = useLocalSearchParams<{ date?: string; postId?: string }>();
+  const navigation = useNavigation();
   const queryClient = useQueryClient();
+  const isEditing = !!postId;
+  const numericPostId = postId ? Number(postId) : undefined;
+
   const [platform, setPlatform] = useState("LinkedIn");
   const [content, setContent] = useState("");
   const [selectedTime, setSelectedTime] = useState("10:00");
   const [status, setStatus] = useState<"draft" | "ready">("draft");
+  const [isInitialized, setIsInitialized] = useState(!isEditing);
 
-  const baseDate = dateParam ? new Date(dateParam) : new Date();
+  const { data: existingPost, isLoading: isLoadingPost } = useQuery({
+    queryKey: ["scheduled-post", numericPostId],
+    queryFn: () => fetchScheduledPost(numericPostId!),
+    enabled: isEditing,
+  });
+
+  useEffect(() => {
+    navigation.setOptions({
+      title: isEditing ? "Edit Post" : "Schedule Post",
+    });
+  }, [isEditing, navigation]);
+
+  useEffect(() => {
+    if (existingPost && !isInitialized) {
+      setPlatform(existingPost.platform);
+      setContent(existingPost.content);
+      const postDate = new Date(existingPost.scheduledAt);
+      const hours = postDate.getHours().toString().padStart(2, "0");
+      const minutes = postDate.getMinutes().toString().padStart(2, "0");
+      setSelectedTime(`${hours}:${minutes}`);
+      setStatus(existingPost.status === "ready" ? "ready" : "draft");
+      setIsInitialized(true);
+    }
+  }, [existingPost, isInitialized]);
+
+  const baseDate = isEditing && existingPost
+    ? new Date(existingPost.scheduledAt)
+    : dateParam
+      ? new Date(dateParam)
+      : new Date();
 
   const saveMutation = useMutation({
     mutationFn: () => {
       const [hours, minutes] = selectedTime.split(":").map(Number);
       const scheduledAt = new Date(baseDate);
       scheduledAt.setHours(hours, minutes, 0, 0);
+
+      if (isEditing && numericPostId) {
+        return updateScheduledPost(numericPostId, {
+          platform,
+          content,
+          scheduledAt: scheduledAt.toISOString(),
+          status,
+        });
+      }
       return createScheduledPost({
         platform,
         content,
@@ -51,10 +100,46 @@ export default function CreatePostScreen() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["scheduled-posts"] });
+      if (isEditing) {
+        queryClient.invalidateQueries({ queryKey: ["scheduled-post", numericPostId] });
+      }
       if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
     },
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteScheduledPost(numericPostId!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["scheduled-posts"] });
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.back();
+    },
+  });
+
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Post",
+      "Are you sure you want to delete this scheduled post? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => deleteMutation.mutate(),
+        },
+      ]
+    );
+  };
+
+  if (isEditing && isLoadingPost) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color={c.tint} />
+        <Text style={styles.loadingText}>Loading post...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -180,6 +265,13 @@ export default function CreatePostScreen() {
         ))}
       </View>
 
+      {existingPost?.googleCalendarEventId && (
+        <View style={styles.syncBadge}>
+          <Feather name="calendar" size={14} color={c.success} />
+          <Text style={styles.syncBadgeText}>Synced with Google Calendar</Text>
+        </View>
+      )}
+
       <Pressable
         style={({ pressed }) => [
           styles.saveButton,
@@ -196,9 +288,33 @@ export default function CreatePostScreen() {
           <Feather name="check" size={18} color={c.background} />
         )}
         <Text style={styles.saveButtonText}>
-          {saveMutation.isPending ? "Scheduling..." : "Schedule Post"}
+          {saveMutation.isPending
+            ? isEditing ? "Saving..." : "Scheduling..."
+            : isEditing ? "Save Changes" : "Schedule Post"}
         </Text>
       </Pressable>
+
+      {isEditing && (
+        <Pressable
+          style={({ pressed }) => [
+            styles.deleteButton,
+            pressed && { opacity: 0.8 },
+            deleteMutation.isPending && { opacity: 0.5 },
+          ]}
+          onPress={handleDelete}
+          disabled={deleteMutation.isPending}
+          testID="delete-post"
+        >
+          {deleteMutation.isPending ? (
+            <ActivityIndicator size="small" color={c.error} />
+          ) : (
+            <Feather name="trash-2" size={18} color={c.error} />
+          )}
+          <Text style={styles.deleteButtonText}>
+            {deleteMutation.isPending ? "Deleting..." : "Delete Post"}
+          </Text>
+        </Pressable>
+      )}
     </ScrollView>
   );
 }
@@ -206,6 +322,16 @@ export default function CreatePostScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: c.surface },
   scrollContent: { padding: spacing.xl, paddingBottom: 40 },
+  loadingContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  loadingText: {
+    fontFamily: fonts.medium,
+    fontSize: 14,
+    color: c.textSecondary,
+    marginTop: spacing.md,
+  },
   dateChip: {
     flexDirection: "row",
     alignItems: "center",
@@ -303,6 +429,22 @@ const styles = StyleSheet.create({
     color: c.textSecondary,
   },
   statusChipTextActive: { color: c.background },
+  syncBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    backgroundColor: c.success + "15",
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.md,
+    marginTop: spacing.lg,
+    alignSelf: "flex-start",
+  },
+  syncBadgeText: {
+    fontFamily: fonts.medium,
+    fontSize: 12,
+    color: c.success,
+  },
   saveButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -317,5 +459,22 @@ const styles = StyleSheet.create({
     fontFamily: fonts.semibold,
     fontSize: 16,
     color: c.background,
+  },
+  deleteButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: c.error + "10",
+    paddingVertical: spacing.lg,
+    borderRadius: radius.md,
+    gap: spacing.sm,
+    marginTop: spacing.md,
+    borderWidth: 1,
+    borderColor: c.error + "30",
+  },
+  deleteButtonText: {
+    fontFamily: fonts.semibold,
+    fontSize: 16,
+    color: c.error,
   },
 });

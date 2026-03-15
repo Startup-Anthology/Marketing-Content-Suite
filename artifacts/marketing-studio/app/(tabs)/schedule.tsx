@@ -1,8 +1,10 @@
 import { Feather } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
+  Alert,
+  Animated,
   FlatList,
   Platform,
   Pressable,
@@ -10,11 +12,13 @@ import {
   Text,
   View,
 } from "react-native";
+import { Swipeable } from "react-native-gesture-handler";
+import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Colors from "@/constants/colors";
 import { fonts, spacing, radius, platformColors } from "@/constants/theme";
-import { fetchScheduledPosts } from "@/lib/api";
+import { fetchScheduledPosts, deleteScheduledPost } from "@/lib/api";
 
 const c = Colors.light;
 
@@ -39,9 +43,152 @@ function isSameDay(d1: Date, d2: Date) {
   );
 }
 
+interface PostItem {
+  id: number;
+  platform: string;
+  content: string;
+  scheduledAt: string;
+  status: string;
+  googleCalendarEventId?: string | null;
+}
+
+function SwipeablePostCard({
+  item,
+  onPress,
+  onDelete,
+}: {
+  item: PostItem;
+  onPress: () => void;
+  onDelete: () => void;
+}) {
+  const renderRightActions = useCallback(
+    (_progress: Animated.AnimatedInterpolation<number>, dragX: Animated.AnimatedInterpolation<number>) => {
+      const scale = dragX.interpolate({
+        inputRange: [-80, 0],
+        outputRange: [1, 0.5],
+        extrapolate: "clamp",
+      });
+      return (
+        <Pressable
+          style={styles.swipeDeleteBtn}
+          onPress={onDelete}
+        >
+          <Animated.View style={{ transform: [{ scale }], alignItems: "center", gap: 2 }}>
+            <Feather name="trash-2" size={20} color="#FFF" />
+            <Text style={styles.swipeDeleteText}>Delete</Text>
+          </Animated.View>
+        </Pressable>
+      );
+    },
+    [onDelete]
+  );
+
+  return (
+    <Swipeable
+      renderRightActions={renderRightActions}
+      rightThreshold={40}
+      overshootRight={false}
+    >
+      <Pressable
+        onPress={onPress}
+        style={({ pressed }) => [
+          styles.postCard,
+          pressed && { opacity: 0.85 },
+        ]}
+      >
+        <View style={styles.postTimeline}>
+          <View
+            style={[
+              styles.postDot,
+              {
+                backgroundColor:
+                  platformColors[item.platform] || c.tint,
+              },
+            ]}
+          />
+          <View style={styles.postLine} />
+        </View>
+        <View style={styles.postContent}>
+          <View style={styles.postTop}>
+            <View
+              style={[
+                styles.platformBadge,
+                {
+                  backgroundColor:
+                    (platformColors[item.platform] || c.tint) + "20",
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.platformText,
+                  {
+                    color: platformColors[item.platform] || c.tint,
+                  },
+                ]}
+              >
+                {item.platform}
+              </Text>
+            </View>
+            <View style={styles.postTopRight}>
+              {item.googleCalendarEventId && (
+                <View style={styles.calSyncIcon}>
+                  <Feather name="calendar" size={12} color={c.success} />
+                </View>
+              )}
+              <Text style={styles.postTime}>
+                {new Date(item.scheduledAt).toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "2-digit",
+                })}
+              </Text>
+            </View>
+          </View>
+          <Text style={styles.postText} numberOfLines={3}>
+            {item.content}
+          </Text>
+          <View style={styles.postBottom}>
+            <View
+              style={[
+                styles.statusChip,
+                {
+                  backgroundColor:
+                    item.status === "ready"
+                      ? c.success + "20"
+                      : item.status === "published"
+                        ? c.tint + "20"
+                        : c.warning + "20",
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.statusChipText,
+                  {
+                    color:
+                      item.status === "ready"
+                        ? c.success
+                        : item.status === "published"
+                          ? c.tint
+                          : c.warning,
+                  },
+                ]}
+              >
+                {item.status}
+              </Text>
+            </View>
+            <Feather name="chevron-right" size={14} color={c.textMuted} />
+          </View>
+        </View>
+      </Pressable>
+    </Swipeable>
+  );
+}
+
 export default function ScheduleTab() {
   const insets = useSafeAreaInsets();
   const webTop = Platform.OS === "web" ? 67 : 0;
+  const queryClient = useQueryClient();
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const weekDates = useMemo(() => getWeekDates(weekOffset), [weekOffset]);
@@ -51,9 +198,35 @@ export default function ScheduleTab() {
     queryFn: fetchScheduledPosts,
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => deleteScheduledPost(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["scheduled-posts"] });
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    },
+  });
+
+  const handleDeletePost = useCallback(
+    (item: PostItem) => {
+      Alert.alert(
+        "Delete Post",
+        `Delete "${item.content.slice(0, 50)}${item.content.length > 50 ? "..." : ""}"?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: () => deleteMutation.mutate(item.id),
+          },
+        ]
+      );
+    },
+    [deleteMutation]
+  );
+
   const dayPosts = useMemo(
     () =>
-      posts.filter((p: { scheduledAt: string }) => isSameDay(new Date(p.scheduledAt), selectedDate)),
+      posts.filter((p: PostItem) => isSameDay(new Date(p.scheduledAt), selectedDate)),
     [posts, selectedDate]
   );
 
@@ -92,7 +265,7 @@ export default function ScheduleTab() {
         {weekDates.map((date, i) => {
           const isSelected = isSameDay(date, selectedDate);
           const isToday = isSameDay(date, today);
-          const hasPosts = posts.some((p: { scheduledAt: string }) =>
+          const hasPosts = posts.some((p: PostItem) =>
             isSameDay(new Date(p.scheduledAt), date)
           );
           return (
@@ -172,82 +345,16 @@ export default function ScheduleTab() {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
-            <View style={styles.postCard}>
-              <View style={styles.postTimeline}>
-                <View
-                  style={[
-                    styles.postDot,
-                    {
-                      backgroundColor:
-                        platformColors[item.platform] || c.tint,
-                    },
-                  ]}
-                />
-                <View style={styles.postLine} />
-              </View>
-              <View style={styles.postContent}>
-                <View style={styles.postTop}>
-                  <View
-                    style={[
-                      styles.platformBadge,
-                      {
-                        backgroundColor:
-                          (platformColors[item.platform] || c.tint) + "20",
-                      },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.platformText,
-                        {
-                          color: platformColors[item.platform] || c.tint,
-                        },
-                      ]}
-                    >
-                      {item.platform}
-                    </Text>
-                  </View>
-                  <Text style={styles.postTime}>
-                    {new Date(item.scheduledAt).toLocaleTimeString("en-US", {
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
-                  </Text>
-                </View>
-                <Text style={styles.postText} numberOfLines={3}>
-                  {item.content}
-                </Text>
-                <View
-                  style={[
-                    styles.statusChip,
-                    {
-                      backgroundColor:
-                        item.status === "ready"
-                          ? c.success + "20"
-                          : item.status === "published"
-                            ? c.tint + "20"
-                            : c.warning + "20",
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.statusChipText,
-                      {
-                        color:
-                          item.status === "ready"
-                            ? c.success
-                            : item.status === "published"
-                              ? c.tint
-                              : c.warning,
-                      },
-                    ]}
-                  >
-                    {item.status}
-                  </Text>
-                </View>
-              </View>
-            </View>
+            <SwipeablePostCard
+              item={item}
+              onPress={() =>
+                router.push({
+                  pathname: "/create-post",
+                  params: { postId: String(item.id) },
+                })
+              }
+              onDelete={() => handleDeletePost(item)}
+            />
           )}
         />
       )}
@@ -324,6 +431,7 @@ const styles = StyleSheet.create({
   postCard: {
     flexDirection: "row",
     marginBottom: spacing.md,
+    backgroundColor: c.background,
   },
   postTimeline: {
     width: 20,
@@ -356,6 +464,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: spacing.sm,
   },
+  postTopRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  calSyncIcon: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: c.success + "15",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   platformBadge: {
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -374,6 +495,11 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: spacing.sm,
   },
+  postBottom: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
   statusChip: {
     alignSelf: "flex-start",
     paddingHorizontal: 8,
@@ -381,6 +507,20 @@ const styles = StyleSheet.create({
     borderRadius: radius.full,
   },
   statusChipText: { fontFamily: fonts.medium, fontSize: 11 },
+  swipeDeleteBtn: {
+    backgroundColor: c.error,
+    justifyContent: "center",
+    alignItems: "center",
+    width: 80,
+    borderRadius: radius.lg,
+    marginLeft: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  swipeDeleteText: {
+    fontFamily: fonts.medium,
+    fontSize: 11,
+    color: "#FFF",
+  },
   emptyState: {
     alignItems: "center",
     justifyContent: "center",

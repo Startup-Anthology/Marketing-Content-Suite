@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -19,13 +20,19 @@ import {
 import BrandGuideViewer from "@/components/BrandGuideViewer";
 import Colors from "@/constants/colors";
 import { fonts, spacing, radius } from "@/constants/theme";
-import { fetchBrandGuide, saveBrandGuide } from "@/lib/api";
+import {
+  fetchBrandGuide,
+  saveBrandGuide,
+  fetchGoogleCalendarStatus,
+  fetchGoogleCalendarAuthUrl,
+  disconnectGoogleCalendar,
+} from "@/lib/api";
 
 const c = Colors.light;
 
 type MCIName = ComponentProps<typeof MaterialCommunityIcons>["name"];
 
-type SectionKey = "about" | "brand" | "help";
+type SectionKey = "about" | "brand" | "integrations" | "help";
 
 const BRAND_COLORS_DEFAULT = [
   { name: "SA Gold", hex: "#BB935B" },
@@ -387,6 +394,125 @@ export default function SettingsScreen() {
     );
   };
 
+  const { data: calStatus, isLoading: calLoading } = useQuery({
+    queryKey: ["google-calendar-status"],
+    queryFn: fetchGoogleCalendarStatus,
+  });
+
+  const connectCalMutation = useMutation({
+    mutationFn: async () => {
+      const { url } = await fetchGoogleCalendarAuthUrl();
+      if (Platform.OS === "web") {
+        window.open(url, "_blank");
+      } else {
+        await Linking.openURL(url);
+      }
+    },
+  });
+
+  const disconnectCalMutation = useMutation({
+    mutationFn: disconnectGoogleCalendar,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["google-calendar-status"] });
+      Alert.alert("Disconnected", "Google Calendar has been disconnected.");
+    },
+  });
+
+  const handleDisconnectCalendar = () => {
+    Alert.alert(
+      "Disconnect Google Calendar",
+      "Scheduled posts will no longer sync to your calendar. Existing calendar events will remain.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Disconnect",
+          style: "destructive",
+          onPress: () => disconnectCalMutation.mutate(),
+        },
+      ]
+    );
+  };
+
+  const renderIntegrationsSection = () => (
+    <>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Google Calendar</Text>
+        <Text style={styles.sectionHint}>
+          Connect your Google Calendar to automatically sync scheduled posts as calendar events.
+        </Text>
+
+        <View style={styles.integrationCard}>
+          <View style={styles.integrationIcon}>
+            <MaterialCommunityIcons name="google" size={24} color="#4285F4" />
+          </View>
+          <View style={styles.integrationInfo}>
+            <Text style={styles.integrationName}>Google Calendar</Text>
+            <View style={styles.integrationStatusRow}>
+              <View
+                style={[
+                  styles.integrationDot,
+                  { backgroundColor: calStatus?.connected ? c.success : c.textMuted },
+                ]}
+              />
+              <Text
+                style={[
+                  styles.integrationStatusText,
+                  { color: calStatus?.connected ? c.success : c.textMuted },
+                ]}
+              >
+                {calLoading
+                  ? "Checking..."
+                  : calStatus?.connected
+                    ? "Connected"
+                    : "Not connected"}
+              </Text>
+            </View>
+          </View>
+          {calStatus?.connected ? (
+            <Pressable
+              style={({ pressed }) => [
+                styles.disconnectBtn,
+                pressed && { opacity: 0.7 },
+              ]}
+              onPress={handleDisconnectCalendar}
+              disabled={disconnectCalMutation.isPending}
+            >
+              <Feather name="x" size={14} color={c.error} />
+              <Text style={styles.disconnectBtnText}>Disconnect</Text>
+            </Pressable>
+          ) : (
+            <Pressable
+              style={({ pressed }) => [
+                styles.connectBtn,
+                pressed && { opacity: 0.7 },
+              ]}
+              onPress={() => connectCalMutation.mutate()}
+              disabled={connectCalMutation.isPending}
+            >
+              {connectCalMutation.isPending ? (
+                <ActivityIndicator size="small" color={c.tint} />
+              ) : (
+                <>
+                  <Feather name="link" size={14} color={c.tint} />
+                  <Text style={styles.connectBtnText}>Connect</Text>
+                </>
+              )}
+            </Pressable>
+          )}
+        </View>
+
+        {calStatus?.connected && (
+          <View style={styles.syncInfoCard}>
+            <Feather name="check-circle" size={16} color={c.success} />
+            <Text style={styles.syncInfoText}>
+              New and updated scheduled posts will automatically appear on your Google Calendar.
+            </Text>
+          </View>
+        )}
+      </View>
+    </>
+  );
+
   const renderHelpSection = () => (
     <>
       <Pressable style={styles.brandGuideCard} onPress={() => setBrandGuideVisible(true)}>
@@ -475,7 +601,8 @@ export default function SettingsScreen() {
 
   const sections: { key: SectionKey; label: string; icon: string }[] = [
     { key: "about", label: "About", icon: "info" },
-    { key: "brand", label: "Brand Guide", icon: "bookmark" },
+    { key: "brand", label: "Brand", icon: "bookmark" },
+    { key: "integrations", label: "Sync", icon: "link" },
     { key: "help", label: "Help", icon: "help-circle" },
   ];
 
@@ -502,6 +629,7 @@ export default function SettingsScreen() {
 
       {activeSection === "about" && renderAboutSection()}
       {activeSection === "brand" && renderBrandSection()}
+      {activeSection === "integrations" && renderIntegrationsSection()}
       {activeSection === "help" && renderHelpSection()}
 
       <BrandGuideViewer
@@ -668,4 +796,77 @@ const styles = StyleSheet.create({
   brandGuideCardBadgeText: { fontFamily: fonts.medium, fontSize: 10, color: c.tint },
   brandGuideCardAction: { flexDirection: "row", alignItems: "center", gap: 4 },
   brandGuideCardActionText: { fontFamily: fonts.medium, fontSize: 12, color: c.tint },
+  integrationCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: c.surface,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: c.border,
+    gap: spacing.md,
+  },
+  integrationIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.md,
+    backgroundColor: "#4285F4" + "15",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  integrationInfo: { flex: 1 },
+  integrationName: { fontFamily: fonts.semibold, fontSize: 15, color: c.text },
+  integrationStatusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginTop: 2,
+  },
+  integrationDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  integrationStatusText: {
+    fontFamily: fonts.medium,
+    fontSize: 12,
+  },
+  connectBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: c.tint + "15",
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.md,
+  },
+  connectBtnText: { fontFamily: fonts.medium, fontSize: 13, color: c.tint },
+  disconnectBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: c.error + "10",
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.md,
+  },
+  disconnectBtnText: { fontFamily: fonts.medium, fontSize: 13, color: c.error },
+  syncInfoCard: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: spacing.sm,
+    backgroundColor: c.success + "10",
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginTop: spacing.md,
+    borderWidth: 1,
+    borderColor: c.success + "20",
+  },
+  syncInfoText: {
+    fontFamily: fonts.regular,
+    fontSize: 12,
+    color: c.success,
+    flex: 1,
+    lineHeight: 17,
+  },
 });

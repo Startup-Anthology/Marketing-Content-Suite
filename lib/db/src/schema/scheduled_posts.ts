@@ -8,6 +8,7 @@ export const scheduledPostsTable = pgTable("scheduled_posts", {
   content: text("content").notNull(),
   scheduledAt: timestamp("scheduled_at").notNull(),
   status: text("status").notNull().default("draft"),
+  googleCalendarEventId: text("google_calendar_event_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

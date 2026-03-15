@@ -92,6 +92,10 @@ export async function fetchScheduledPosts() {
   return apiFetch("/scheduled-posts");
 }
 
+export async function fetchScheduledPost(id: number) {
+  return apiFetch(`/scheduled-posts/${id}`);
+}
+
 export async function createScheduledPost(data: {
   platform: string;
   content: string;
@@ -245,4 +249,16 @@ export async function createInterviewPrep(data: {
 
 export async function deleteInterviewPrep(id: number) {
   return apiFetch(`/interview-preps/${id}`, { method: "DELETE" });
+}
+
+export async function fetchGoogleCalendarStatus() {
+  return apiFetch("/google-calendar/status");
+}
+
+export async function fetchGoogleCalendarAuthUrl() {
+  return apiFetch("/google-calendar/auth-url");
+}
+
+export async function disconnectGoogleCalendar() {
+  return apiFetch("/google-calendar/disconnect", { method: "POST" });
 }

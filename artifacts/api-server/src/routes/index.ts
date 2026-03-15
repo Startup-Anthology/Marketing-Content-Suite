@@ -8,6 +8,7 @@ import aiRouter from "./ai";
 import brandGuideRouter from "./brand-guide";
 import podcastScriptsRouter from "./podcast-scripts";
 import interviewPrepsRouter from "./interview-preps";
+import googleCalendarRouter from "./google-calendar";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(aiRouter);
 router.use(brandGuideRouter);
 router.use(podcastScriptsRouter);
 router.use(interviewPrepsRouter);
+router.use(googleCalendarRouter);
 
 export default router;
