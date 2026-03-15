@@ -1,8 +1,27 @@
 import { Router } from "express";
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { anthropic } from "@workspace/integrations-anthropic-ai";
 import { getBrandContextBlock } from "../lib/brand-context";
 
 const router = Router();
+
+async function callClaude(systemPrompt: string, userMessage: string, maxTokens = 8192): Promise<string> {
+  const response = await anthropic.messages.create({
+    model: "claude-sonnet-4-6",
+    max_tokens: maxTokens,
+    system: systemPrompt,
+    messages: [{ role: "user", content: userMessage }],
+  });
+  const block = response.content[0];
+  return block.type === "text" ? block.text : "";
+}
+
+function extractJSON(text: string): Record<string, unknown> {
+  const match = text.match(/\{[\s\S]*\}/);
+  if (match) {
+    return JSON.parse(match[0]);
+  }
+  return JSON.parse(text);
+}
 
 router.post("/ai/generate-draft", async (req, res) => {
   const { type, platform, topic, tone, additionalContext } = req.body;
@@ -14,29 +33,19 @@ ${brandContext ? `\n${brandContext}\n` : `Brand voice: Professional yet approach
 ${tone ? `Tone: ${tone}` : ""}
 ${additionalContext ? `Additional context: ${additionalContext}` : ""}
 
-Return a JSON object with:
+You MUST respond with ONLY a valid JSON object (no markdown, no backticks, no extra text) with these fields:
 - "draft": the complete content piece (string)
 - "suggestions": array of 3 improvement tips (strings)`;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-5.2",
-    max_completion_tokens: 8192,
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: `Write a ${type} about: ${topic}` },
-    ],
-    response_format: { type: "json_object" },
-  });
-
-  const content = response.choices[0]?.message?.content ?? '{"draft":"","suggestions":[]}';
   try {
-    const parsed = JSON.parse(content);
+    const content = await callClaude(systemPrompt, `Write a ${type} about: ${topic}`);
+    const parsed = extractJSON(content);
     res.json({
       draft: parsed.draft || "",
       suggestions: parsed.suggestions || [],
     });
   } catch {
-    res.json({ draft: content, suggestions: [] });
+    res.json({ draft: "", suggestions: [] });
   }
 });
 
@@ -49,25 +58,15 @@ router.post("/ai/seo-research", async (req, res) => {
 ${brandContext ? `\n${brandContext}\n` : ""}
 ${targetAudience ? `Target audience: ${targetAudience}` : "Target audience: startup founders and entrepreneurs"}
 
-Return a JSON object with:
+You MUST respond with ONLY a valid JSON object (no markdown, no backticks, no extra text) with these fields:
 - "keywords": array of 10-15 relevant SEO keywords (strings)
 - "questions": array of 8-10 "People Also Ask" style questions (strings)
 - "talkingPoints": array of 5-7 key talking points for content creation (strings)
 - "aeoSummary": a 2-3 paragraph summary optimized for answer engines like Perplexity, ChatGPT search, etc.`;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-5.2",
-    max_completion_tokens: 8192,
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: `Research this topic: ${topic}` },
-    ],
-    response_format: { type: "json_object" },
-  });
-
-  const content = response.choices[0]?.message?.content ?? '{"keywords":[],"questions":[],"talkingPoints":[],"aeoSummary":""}';
   try {
-    const parsed = JSON.parse(content);
+    const content = await callClaude(systemPrompt, `Research this topic: ${topic}`);
+    const parsed = extractJSON(content);
     res.json({
       keywords: parsed.keywords || [],
       questions: parsed.questions || [],
@@ -75,7 +74,7 @@ Return a JSON object with:
       aeoSummary: parsed.aeoSummary || "",
     });
   } catch {
-    res.json({ keywords: [], questions: [], talkingPoints: [], aeoSummary: content });
+    res.json({ keywords: [], questions: [], talkingPoints: [], aeoSummary: "" });
   }
 });
 
@@ -110,7 +109,7 @@ Pacing: ${wordsPerMinute} words per minute
 
 Write the script using ear-friendly, conversational language. Avoid jargon unless explained. Use short sentences. Include natural transitions, pauses noted as [PAUSE], and emphasis noted as [EMPHASIS].
 
-Return a JSON object with:
+You MUST respond with ONLY a valid JSON object (no markdown, no backticks, no extra text) with these fields:
 - "cold_open": string - A compelling 30-second hook that grabs attention (about 75 words)
 - "setup": string - Introduction of the topic and what listeners will learn (about 150 words)
 - "segments": array of 3-5 objects, each with:
@@ -121,19 +120,13 @@ Return a JSON object with:
 - "takeaways": string - Key takeaways section summarizing main points
 - "outro": string - Sign-off with call to action`;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-5.2",
-    max_completion_tokens: 16384,
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: `Write a ${format} podcast episode titled "${episodeTitle}" about: ${topic}` },
-    ],
-    response_format: { type: "json_object" },
-  });
-
-  const content = response.choices[0]?.message?.content ?? '{"cold_open":"","setup":"","segments":[],"takeaways":"","outro":""}';
   try {
-    const parsed = JSON.parse(content);
+    const content = await callClaude(
+      systemPrompt,
+      `Write a ${format} podcast episode titled "${episodeTitle}" about: ${topic}`,
+      16384
+    );
+    const parsed = extractJSON(content);
     res.json({
       cold_open: parsed.cold_open || "",
       setup: parsed.setup || "",
@@ -142,7 +135,7 @@ Return a JSON object with:
       outro: parsed.outro || "",
     });
   } catch {
-    res.json({ cold_open: content, setup: "", segments: [], takeaways: "", outro: "" });
+    res.json({ cold_open: "", setup: "", segments: [], takeaways: "", outro: "" });
   }
 });
 
@@ -161,7 +154,7 @@ ${brandContext}
 
 Episode length: ~${lengthMinutes} minutes
 
-Return a JSON object with:
+You MUST respond with ONLY a valid JSON object (no markdown, no backticks, no extra text) with these fields:
 - "guest_brief": string - A detailed research brief about the guest (2-3 paragraphs covering their background, notable achievements, areas of expertise, recent work, and any relevant context)
 - "questions": array of 15-20 objects, each with:
   - "segment": string - one of "opening", "core_topic", "deep_dive", "rapid_fire", "close"
@@ -175,26 +168,20 @@ Return a JSON object with:
   - "description": string - what happens in this section
   - "notes": string - production notes or talking points`;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-5.2",
-    max_completion_tokens: 16384,
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: `Prepare an interview about "${interviewTopic}" with guest: ${guestName}\n\nGuest bio/background: ${guestBio}` },
-    ],
-    response_format: { type: "json_object" },
-  });
-
-  const content = response.choices[0]?.message?.content ?? '{"guest_brief":"","questions":[],"run_of_show":[]}';
   try {
-    const parsed = JSON.parse(content);
+    const content = await callClaude(
+      systemPrompt,
+      `Prepare an interview about "${interviewTopic}" with guest: ${guestName}\n\nGuest bio/background: ${guestBio}`,
+      16384
+    );
+    const parsed = extractJSON(content);
     res.json({
       guest_brief: parsed.guest_brief || "",
       questions: parsed.questions || [],
       run_of_show: parsed.run_of_show || [],
     });
   } catch {
-    res.json({ guest_brief: content, questions: [], run_of_show: [] });
+    res.json({ guest_brief: "", questions: [], run_of_show: [] });
   }
 });
 

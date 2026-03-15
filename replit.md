@@ -112,25 +112,33 @@ Isolated frontend sandbox for UI prototyping. Components are rendered via a Vite
 
 Expo React Native mobile app — Marketing Content Studio for Startup Anthology founders. Styled with SA brand colors (Black #000000, SA Gold #BB935B).
 
-- **Tabs**: Create, Studio, Research, Schedule, Brand, Help, Settings
-- **Modals**: create-content, create-storyboard, create-post, podcast-generator, interview-prep
+- **Tabs** (4): Create, Studio, Research, Schedule — each has a gear icon in the header for Settings
+- **Modals**: create-content, create-storyboard, create-post, podcast-generator, interview-prep, settings
 - **Features**:
   - AI-powered content generation (social posts, newsletters, captions, blog posts)
   - Storyboard & ad creative builder with scene management
   - SEO/AEO research with keyword analysis, PAA questions, talking points
   - Post scheduling with weekly calendar view
-  - Brand Guide — define brand identity (name, voice, tone, colors, fonts, logo, story) with live preview; auto-injected into AI prompts
-  - Help — searchable FAQ, feature summaries, and branding guide reference
-  - Brand settings display
+  - Settings modal with 3 sub-sections: About, Brand Guide, Help
+    - Brand Guide — define brand identity (name, voice, tone, colors, fonts, logo, story); auto-injected into AI prompts
+    - Help — searchable FAQ, feature summaries
+    - About — brand palette, version info, supported platforms
   - Podcast Generator: AI-powered episode script generation (solo, duo, interview, debate, narrative formats) with structured output (cold open, setup, segments, takeaways, outro), speaker tag rendering, per-section copy, and draft saving
   - Interview Prep: AI-powered interview preparation (guest brief, 15-20 structured questions by segment, follow-up suggestions, run-of-show timeline), with tabbed output view, export/share, and draft saving
 - **API**: Uses `lib/api.ts` helper to call `@workspace/api-server` endpoints
 - **DB Tables**: content_pieces, storyboards, research_notes, scheduled_posts, brand_guide, podcast_scripts, interview_preps
-- **AI Routes**: POST /api/ai/generate-draft, POST /api/ai/seo-research, POST /api/ai/podcast-script, POST /api/ai/interview-prep (OpenAI gpt-5.2) — both inject brand context from saved brand guide
+- **AI Routes**: POST /api/ai/generate-draft, POST /api/ai/seo-research, POST /api/ai/podcast-script, POST /api/ai/interview-prep — powered by Claude Sonnet 4.6 (Anthropic) via Replit AI Integrations; all inject brand context from saved brand guide
 - **Brand Guide API**: GET /api/brand-guide, PUT /api/brand-guide — singleton brand identity CRUD
 - **CRUD Routes**: /podcast-scripts, /interview-preps (GET list, POST create, GET/:id, DELETE/:id)
 - **Fonts**: Inter (400/500/600/700)
 - **Port**: 23704 (via $PORT)
+
+### `lib/integrations-anthropic-ai` (`@workspace/integrations-anthropic-ai`)
+
+Anthropic AI integration via Replit AI Integrations proxy. Pre-configured SDK client using `AI_INTEGRATIONS_ANTHROPIC_BASE_URL` and `AI_INTEGRATIONS_ANTHROPIC_API_KEY` env vars. Exports `anthropic` client and batch processing utilities.
+
+- Model: `claude-sonnet-4-6`
+- Max tokens: 8192 (16384 for long-form content like podcast scripts)
 
 ### `scripts` (`@workspace/scripts`)
 

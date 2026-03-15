@@ -1,5 +1,6 @@
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -433,9 +434,14 @@ export default function ResearchTab() {
   return (
     <View style={[styles.container, { paddingTop: insets.top + webTop }]}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Research</Text>
+        <View style={styles.headerRow}>
+          <Text style={styles.headerTitle}>Research</Text>
+          <Pressable onPress={() => router.push("/settings")} style={({ pressed }) => [styles.gearBtn, pressed && { opacity: 0.6 }]} testID="settings-gear">
+            <Feather name="settings" size={22} color={c.textSecondary} />
+          </Pressable>
+        </View>
         <Text style={styles.headerSubtitle}>
-          SEO, AEO & brand strategy
+          Discover keywords, questions & strategy
         </Text>
       </View>
 
@@ -466,6 +472,8 @@ export default function ResearchTab() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: c.background },
   header: { paddingHorizontal: spacing.xl, paddingBottom: spacing.md },
+  headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  gearBtn: { padding: 4 },
   headerTitle: { fontFamily: fonts.bold, fontSize: 28, color: c.text },
   headerSubtitle: {
     fontFamily: fonts.regular,

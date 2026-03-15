@@ -80,6 +80,14 @@ function RootLayoutNav() {
           headerStyle: { backgroundColor: Colors.light.surface },
         }}
       />
+      <Stack.Screen
+        name="settings"
+        options={{
+          title: "Settings",
+          presentation: "modal",
+          headerStyle: { backgroundColor: Colors.light.background },
+        }}
+      />
     </Stack>
   );
 }

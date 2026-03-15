@@ -10,6 +10,7 @@ import {
   Text,
   View,
 } from "react-native";
+
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Colors from "@/constants/colors";
@@ -36,9 +37,14 @@ export default function StudioTab() {
   return (
     <View style={[styles.container, { paddingTop: insets.top + webTop }]}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Studio</Text>
+        <View style={styles.headerRow}>
+          <Text style={styles.headerTitle}>Studio</Text>
+          <Pressable onPress={() => router.push("/settings")} style={({ pressed }) => [styles.gearBtn, pressed && { opacity: 0.6 }]} testID="settings-gear">
+            <Feather name="settings" size={22} color={c.textSecondary} />
+          </Pressable>
+        </View>
         <Text style={styles.headerSubtitle}>
-          Storyboards & ad creatives
+          Plan visual stories and ad creatives
         </Text>
       </View>
 
@@ -96,7 +102,7 @@ export default function StudioTab() {
             No {activeTab === "storyboards" ? "storyboards" : "ad creatives"} yet
           </Text>
           <Text style={styles.emptySubtext}>
-            Tap the button above to create one
+            Start building your first one above
           </Text>
         </View>
       ) : (
@@ -146,6 +152,8 @@ export default function StudioTab() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: c.background },
   header: { paddingHorizontal: spacing.xl, paddingBottom: spacing.md },
+  headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  gearBtn: { padding: 4 },
   headerTitle: { fontFamily: fonts.bold, fontSize: 28, color: c.text },
   headerSubtitle: {
     fontFamily: fonts.regular,

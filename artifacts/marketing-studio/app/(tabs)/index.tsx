@@ -45,9 +45,14 @@ export default function CreateTab() {
   return (
     <View style={[styles.container, { paddingTop: insets.top + webTop }]}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Create</Text>
+        <View style={styles.headerRow}>
+          <Text style={styles.headerTitle}>Create</Text>
+          <Pressable onPress={() => router.push("/settings")} style={({ pressed }) => [styles.gearBtn, pressed && { opacity: 0.6 }]} testID="settings-gear">
+            <Feather name="settings" size={22} color={c.textSecondary} />
+          </Pressable>
+        </View>
         <Text style={styles.headerSubtitle}>
-          Build your marketing content
+          Craft content that moves your audience
         </Text>
       </View>
 
@@ -109,7 +114,7 @@ export default function CreateTab() {
           <Feather name="file-text" size={40} color={c.textMuted} />
           <Text style={styles.emptyText}>No drafts yet</Text>
           <Text style={styles.emptySubtext}>
-            Tap a content type above to get started
+            Pick a content type above and start building
           </Text>
         </View>
       ) : (
@@ -199,6 +204,8 @@ export default function CreateTab() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: c.background },
   header: { paddingHorizontal: spacing.xl, paddingBottom: spacing.lg },
+  headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  gearBtn: { padding: 4 },
   headerTitle: {
     fontFamily: fonts.bold,
     fontSize: 28,

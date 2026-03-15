@@ -1,4 +1,4 @@
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import React, { useMemo, useState } from "react";
@@ -69,8 +69,13 @@ export default function ScheduleTab() {
   return (
     <View style={[styles.container, { paddingTop: insets.top + webTop }]}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Schedule</Text>
-        <Text style={styles.headerSubtitle}>Plan & manage posts</Text>
+        <View style={styles.headerRow}>
+          <Text style={styles.headerTitle}>Schedule</Text>
+          <Pressable onPress={() => router.push("/settings")} style={({ pressed }) => [styles.gearBtn, pressed && { opacity: 0.6 }]} testID="settings-gear">
+            <Feather name="settings" size={22} color={c.textSecondary} />
+          </Pressable>
+        </View>
+        <Text style={styles.headerSubtitle}>Plan, schedule & ship your posts</Text>
       </View>
 
       <View style={styles.calendarHeader}>
@@ -156,7 +161,7 @@ export default function ScheduleTab() {
           <Feather name="calendar" size={40} color={c.textMuted} />
           <Text style={styles.emptyText}>No posts scheduled</Text>
           <Text style={styles.emptySubtext}>
-            Tap + to schedule a post for this day
+            Tap + to line up content for this day
           </Text>
         </View>
       ) : (
@@ -253,6 +258,8 @@ export default function ScheduleTab() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: c.background },
   header: { paddingHorizontal: spacing.xl, paddingBottom: spacing.md },
+  headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  gearBtn: { padding: 4 },
   headerTitle: { fontFamily: fonts.bold, fontSize: 28, color: c.text },
   headerSubtitle: {
     fontFamily: fonts.regular,
