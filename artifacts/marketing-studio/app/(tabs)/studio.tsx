@@ -29,7 +29,7 @@ export default function StudioTab() {
     queryFn: fetchStoryboards,
   });
 
-  const filtered = storyboards.filter((s) =>
+  const filtered = storyboards.filter((s: { type: string }) =>
     activeTab === "storyboards" ? s.type === "storyboard" : s.type === "ad-creative"
   );
 

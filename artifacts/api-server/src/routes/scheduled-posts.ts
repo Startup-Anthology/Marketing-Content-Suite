@@ -18,14 +18,14 @@ router.post("/scheduled-posts", async (req, res) => {
   res.status(201).json(item);
 });
 
-router.get("/scheduled-posts/:id", async (req, res) => {
+router.get("/scheduled-posts/:id", async (req, res): Promise<void> => {
   const id = Number(req.params.id);
   const [item] = await db.select().from(scheduledPostsTable).where(eq(scheduledPostsTable.id, id));
-  if (!item) return res.status(404).json({ error: "Not found" });
+  if (!item) { res.status(404).json({ error: "Not found" }); return; }
   res.json(item);
 });
 
-router.put("/scheduled-posts/:id", async (req, res) => {
+router.put("/scheduled-posts/:id", async (req, res): Promise<void> => {
   const id = Number(req.params.id);
   const { platform, content, scheduledAt, status } = req.body;
   const updates: Record<string, unknown> = { updatedAt: new Date() };
@@ -34,7 +34,7 @@ router.put("/scheduled-posts/:id", async (req, res) => {
   if (scheduledAt !== undefined) updates.scheduledAt = new Date(scheduledAt);
   if (status !== undefined) updates.status = status;
   const [item] = await db.update(scheduledPostsTable).set(updates).where(eq(scheduledPostsTable.id, id)).returning();
-  if (!item) return res.status(404).json({ error: "Not found" });
+  if (!item) { res.status(404).json({ error: "Not found" }); return; }
   res.json(item);
 });
 

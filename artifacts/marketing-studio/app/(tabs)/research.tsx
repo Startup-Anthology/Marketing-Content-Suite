@@ -417,7 +417,7 @@ export default function ResearchTab() {
             .slice()
             .reverse()
             .slice(0, 5)
-            .map((note) => (
+            .map((note: { id: number; category: string; topic: string; content: string }) => (
               <View key={note.id} style={styles.noteCard}>
                 <Text style={styles.noteCategory}>{note.category}</Text>
                 <Text style={styles.noteTopic} numberOfLines={1}>

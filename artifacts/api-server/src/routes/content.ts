@@ -18,18 +18,18 @@ router.post("/content", async (req, res) => {
   res.status(201).json(item);
 });
 
-router.get("/content/:id", async (req, res) => {
+router.get("/content/:id", async (req, res): Promise<void> => {
   const id = Number(req.params.id);
   const [item] = await db.select().from(contentPiecesTable).where(eq(contentPiecesTable.id, id));
-  if (!item) return res.status(404).json({ error: "Not found" });
+  if (!item) { res.status(404).json({ error: "Not found" }); return; }
   res.json(item);
 });
 
-router.put("/content/:id", async (req, res) => {
+router.put("/content/:id", async (req, res): Promise<void> => {
   const id = Number(req.params.id);
   const updates: Record<string, unknown> = { ...req.body, updatedAt: new Date() };
   const [item] = await db.update(contentPiecesTable).set(updates).where(eq(contentPiecesTable.id, id)).returning();
-  if (!item) return res.status(404).json({ error: "Not found" });
+  if (!item) { res.status(404).json({ error: "Not found" }); return; }
   res.json(item);
 });
 

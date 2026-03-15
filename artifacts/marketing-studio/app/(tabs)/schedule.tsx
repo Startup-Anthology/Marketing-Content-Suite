@@ -53,7 +53,7 @@ export default function ScheduleTab() {
 
   const dayPosts = useMemo(
     () =>
-      posts.filter((p) => isSameDay(new Date(p.scheduledAt), selectedDate)),
+      posts.filter((p: { scheduledAt: string }) => isSameDay(new Date(p.scheduledAt), selectedDate)),
     [posts, selectedDate]
   );
 
@@ -87,7 +87,7 @@ export default function ScheduleTab() {
         {weekDates.map((date, i) => {
           const isSelected = isSameDay(date, selectedDate);
           const isToday = isSameDay(date, today);
-          const hasPosts = posts.some((p) =>
+          const hasPosts = posts.some((p: { scheduledAt: string }) =>
             isSameDay(new Date(p.scheduledAt), date)
           );
           return (

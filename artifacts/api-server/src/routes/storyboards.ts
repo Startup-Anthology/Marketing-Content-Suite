@@ -18,18 +18,18 @@ router.post("/storyboards", async (req, res) => {
   res.status(201).json(item);
 });
 
-router.get("/storyboards/:id", async (req, res) => {
+router.get("/storyboards/:id", async (req, res): Promise<void> => {
   const id = Number(req.params.id);
   const [item] = await db.select().from(storyboardsTable).where(eq(storyboardsTable.id, id));
-  if (!item) return res.status(404).json({ error: "Not found" });
+  if (!item) { res.status(404).json({ error: "Not found" }); return; }
   res.json(item);
 });
 
-router.put("/storyboards/:id", async (req, res) => {
+router.put("/storyboards/:id", async (req, res): Promise<void> => {
   const id = Number(req.params.id);
   const updates: Record<string, unknown> = { ...req.body, updatedAt: new Date() };
   const [item] = await db.update(storyboardsTable).set(updates).where(eq(storyboardsTable.id, id)).returning();
-  if (!item) return res.status(404).json({ error: "Not found" });
+  if (!item) { res.status(404).json({ error: "Not found" }); return; }
   res.json(item);
 });
 
