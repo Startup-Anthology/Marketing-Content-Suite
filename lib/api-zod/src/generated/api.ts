@@ -14,3 +14,321 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * @summary List all content pieces
+ */
+export const ListContentResponseItem = zod.object({
+  id: zod.number(),
+  type: zod.string(),
+  platform: zod.string(),
+  title: zod.string(),
+  body: zod.string(),
+  status: zod.string(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+export const ListContentResponse = zod.array(ListContentResponseItem);
+
+/**
+ * @summary Create a content piece
+ */
+export const CreateContentBody = zod.object({
+  type: zod.string(),
+  platform: zod.string(),
+  title: zod.string(),
+  body: zod.string(),
+  status: zod.string().optional(),
+});
+
+/**
+ * @summary Get a content piece by ID
+ */
+export const GetContentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetContentResponse = zod.object({
+  id: zod.number(),
+  type: zod.string(),
+  platform: zod.string(),
+  title: zod.string(),
+  body: zod.string(),
+  status: zod.string(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Update a content piece
+ */
+export const UpdateContentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateContentBody = zod.object({
+  type: zod.string().optional(),
+  platform: zod.string().optional(),
+  title: zod.string().optional(),
+  body: zod.string().optional(),
+  status: zod.string().optional(),
+});
+
+export const UpdateContentResponse = zod.object({
+  id: zod.number(),
+  type: zod.string(),
+  platform: zod.string(),
+  title: zod.string(),
+  body: zod.string(),
+  status: zod.string(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Delete a content piece
+ */
+export const DeleteContentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List all storyboards
+ */
+export const ListStoryboardsResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  type: zod.string(),
+  scenes: zod.string(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+export const ListStoryboardsResponse = zod.array(ListStoryboardsResponseItem);
+
+/**
+ * @summary Create a storyboard
+ */
+export const CreateStoryboardBody = zod.object({
+  title: zod.string(),
+  type: zod.string(),
+  scenes: zod.string().optional(),
+});
+
+/**
+ * @summary Get a storyboard by ID
+ */
+export const GetStoryboardParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetStoryboardResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  type: zod.string(),
+  scenes: zod.string(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Update a storyboard
+ */
+export const UpdateStoryboardParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateStoryboardBody = zod.object({
+  title: zod.string().optional(),
+  type: zod.string().optional(),
+  scenes: zod.string().optional(),
+});
+
+export const UpdateStoryboardResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  type: zod.string(),
+  scenes: zod.string(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Delete a storyboard
+ */
+export const DeleteStoryboardParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List all research notes
+ */
+export const ListResearchNotesResponseItem = zod.object({
+  id: zod.number(),
+  category: zod.string(),
+  topic: zod.string(),
+  content: zod.string(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+export const ListResearchNotesResponse = zod.array(
+  ListResearchNotesResponseItem,
+);
+
+/**
+ * @summary Create a research note
+ */
+export const CreateResearchNoteBody = zod.object({
+  category: zod.string(),
+  topic: zod.string(),
+  content: zod.string(),
+});
+
+/**
+ * @summary Get a research note by ID
+ */
+export const GetResearchNoteParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetResearchNoteResponse = zod.object({
+  id: zod.number(),
+  category: zod.string(),
+  topic: zod.string(),
+  content: zod.string(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Update a research note
+ */
+export const UpdateResearchNoteParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateResearchNoteBody = zod.object({
+  category: zod.string().optional(),
+  topic: zod.string().optional(),
+  content: zod.string().optional(),
+});
+
+export const UpdateResearchNoteResponse = zod.object({
+  id: zod.number(),
+  category: zod.string(),
+  topic: zod.string(),
+  content: zod.string(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Delete a research note
+ */
+export const DeleteResearchNoteParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List all scheduled posts
+ */
+export const ListScheduledPostsResponseItem = zod.object({
+  id: zod.number(),
+  platform: zod.string(),
+  content: zod.string(),
+  scheduledAt: zod.date(),
+  status: zod.string(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+export const ListScheduledPostsResponse = zod.array(
+  ListScheduledPostsResponseItem,
+);
+
+/**
+ * @summary Create a scheduled post
+ */
+export const CreateScheduledPostBody = zod.object({
+  platform: zod.string(),
+  content: zod.string(),
+  scheduledAt: zod.date(),
+  status: zod.string().optional(),
+});
+
+/**
+ * @summary Get a scheduled post by ID
+ */
+export const GetScheduledPostParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetScheduledPostResponse = zod.object({
+  id: zod.number(),
+  platform: zod.string(),
+  content: zod.string(),
+  scheduledAt: zod.date(),
+  status: zod.string(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Update a scheduled post
+ */
+export const UpdateScheduledPostParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateScheduledPostBody = zod.object({
+  platform: zod.string().optional(),
+  content: zod.string().optional(),
+  scheduledAt: zod.date().optional(),
+  status: zod.string().optional(),
+});
+
+export const UpdateScheduledPostResponse = zod.object({
+  id: zod.number(),
+  platform: zod.string(),
+  content: zod.string(),
+  scheduledAt: zod.date(),
+  status: zod.string(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Delete a scheduled post
+ */
+export const DeleteScheduledPostParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary AI-generate a content draft
+ */
+export const AiGenerateDraftBody = zod.object({
+  type: zod.string(),
+  platform: zod.string(),
+  topic: zod.string(),
+  tone: zod.string().optional(),
+  additionalContext: zod.string().optional(),
+});
+
+export const AiGenerateDraftResponse = zod.object({
+  draft: zod.string(),
+  suggestions: zod.array(zod.string()),
+});
+
+/**
+ * @summary AI SEO/AEO research
+ */
+export const AiSeoResearchBody = zod.object({
+  topic: zod.string(),
+  targetAudience: zod.string().optional(),
+});
+
+export const AiSeoResearchResponse = zod.object({
+  keywords: zod.array(zod.string()),
+  questions: zod.array(zod.string()),
+  talkingPoints: zod.array(zod.string()),
+  aeoSummary: zod.string(),
+});

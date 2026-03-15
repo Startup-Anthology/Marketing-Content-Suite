@@ -6,4 +6,20 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./aiGenerateDraftBody";
+export * from "./aiGenerateDraftResponse";
+export * from "./aiSeoResearchBody";
+export * from "./aiSeoResearchResponse";
+export * from "./contentPiece";
+export * from "./createContentBody";
+export * from "./createResearchNoteBody";
+export * from "./createScheduledPostBody";
+export * from "./createStoryboardBody";
 export * from "./healthStatus";
+export * from "./researchNote";
+export * from "./scheduledPost";
+export * from "./storyboard";
+export * from "./updateContentBody";
+export * from "./updateResearchNoteBody";
+export * from "./updateScheduledPostBody";
+export * from "./updateStoryboardBody";

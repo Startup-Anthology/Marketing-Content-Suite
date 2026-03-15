@@ -10,6 +10,16 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: content
+    description: Content pieces (drafts)
+  - name: storyboards
+    description: Storyboard projects
+  - name: research
+    description: Research notes
+  - name: schedule
+    description: Scheduled posts
+  - name: ai
+    description: AI assist operations
 paths:
   /healthz:
     get:
@@ -24,6 +34,393 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /content:
+    get:
+      operationId: listContent
+      tags: [content]
+      summary: List all content pieces
+      responses:
+        "200":
+          description: List of content pieces
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentPiece"
+    post:
+      operationId: createContent
+      tags: [content]
+      summary: Create a content piece
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateContentBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentPiece"
+
+  /content/{id}:
+    get:
+      operationId: getContent
+      tags: [content]
+      summary: Get a content piece by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Content piece
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentPiece"
+    put:
+      operationId: updateContent
+      tags: [content]
+      summary: Update a content piece
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateContentBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentPiece"
+    delete:
+      operationId: deleteContent
+      tags: [content]
+      summary: Delete a content piece
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /storyboards:
+    get:
+      operationId: listStoryboards
+      tags: [storyboards]
+      summary: List all storyboards
+      responses:
+        "200":
+          description: List of storyboards
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Storyboard"
+    post:
+      operationId: createStoryboard
+      tags: [storyboards]
+      summary: Create a storyboard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateStoryboardBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Storyboard"
+
+  /storyboards/{id}:
+    get:
+      operationId: getStoryboard
+      tags: [storyboards]
+      summary: Get a storyboard by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Storyboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Storyboard"
+    put:
+      operationId: updateStoryboard
+      tags: [storyboards]
+      summary: Update a storyboard
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateStoryboardBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Storyboard"
+    delete:
+      operationId: deleteStoryboard
+      tags: [storyboards]
+      summary: Delete a storyboard
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /research-notes:
+    get:
+      operationId: listResearchNotes
+      tags: [research]
+      summary: List all research notes
+      responses:
+        "200":
+          description: List of research notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ResearchNote"
+    post:
+      operationId: createResearchNote
+      tags: [research]
+      summary: Create a research note
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateResearchNoteBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResearchNote"
+
+  /research-notes/{id}:
+    get:
+      operationId: getResearchNote
+      tags: [research]
+      summary: Get a research note by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Research note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResearchNote"
+    put:
+      operationId: updateResearchNote
+      tags: [research]
+      summary: Update a research note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateResearchNoteBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResearchNote"
+    delete:
+      operationId: deleteResearchNote
+      tags: [research]
+      summary: Delete a research note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /scheduled-posts:
+    get:
+      operationId: listScheduledPosts
+      tags: [schedule]
+      summary: List all scheduled posts
+      responses:
+        "200":
+          description: List of scheduled posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ScheduledPost"
+    post:
+      operationId: createScheduledPost
+      tags: [schedule]
+      summary: Create a scheduled post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateScheduledPostBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScheduledPost"
+
+  /scheduled-posts/{id}:
+    get:
+      operationId: getScheduledPost
+      tags: [schedule]
+      summary: Get a scheduled post by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Scheduled post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScheduledPost"
+    put:
+      operationId: updateScheduledPost
+      tags: [schedule]
+      summary: Update a scheduled post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateScheduledPostBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScheduledPost"
+    delete:
+      operationId: deleteScheduledPost
+      tags: [schedule]
+      summary: Delete a scheduled post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /ai/generate-draft:
+    post:
+      operationId: aiGenerateDraft
+      tags: [ai]
+      summary: AI-generate a content draft
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiGenerateDraftBody"
+      responses:
+        "200":
+          description: Generated draft
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiGenerateDraftResponse"
+
+  /ai/seo-research:
+    post:
+      operationId: aiSeoResearch
+      tags: [ai]
+      summary: AI SEO/AEO research
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiSeoResearchBody"
+      responses:
+        "200":
+          description: SEO research results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiSeoResearchResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +431,286 @@ components:
       required:
         - status
 
+    ContentPiece:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+        platform:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - type
+        - platform
+        - title
+        - body
+        - status
+        - createdAt
+        - updatedAt
+
+    CreateContentBody:
+      type: object
+      properties:
+        type:
+          type: string
+        platform:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        status:
+          type: string
+      required:
+        - type
+        - platform
+        - title
+        - body
+
+    UpdateContentBody:
+      type: object
+      properties:
+        type:
+          type: string
+        platform:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        status:
+          type: string
+
+    Storyboard:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        type:
+          type: string
+        scenes:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - type
+        - scenes
+        - createdAt
+        - updatedAt
+
+    CreateStoryboardBody:
+      type: object
+      properties:
+        title:
+          type: string
+        type:
+          type: string
+        scenes:
+          type: string
+      required:
+        - title
+        - type
+
+    UpdateStoryboardBody:
+      type: object
+      properties:
+        title:
+          type: string
+        type:
+          type: string
+        scenes:
+          type: string
+
+    ResearchNote:
+      type: object
+      properties:
+        id:
+          type: integer
+        category:
+          type: string
+        topic:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - category
+        - topic
+        - content
+        - createdAt
+        - updatedAt
+
+    CreateResearchNoteBody:
+      type: object
+      properties:
+        category:
+          type: string
+        topic:
+          type: string
+        content:
+          type: string
+      required:
+        - category
+        - topic
+        - content
+
+    UpdateResearchNoteBody:
+      type: object
+      properties:
+        category:
+          type: string
+        topic:
+          type: string
+        content:
+          type: string
+
+    ScheduledPost:
+      type: object
+      properties:
+        id:
+          type: integer
+        platform:
+          type: string
+        content:
+          type: string
+        scheduledAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - platform
+        - content
+        - scheduledAt
+        - status
+        - createdAt
+        - updatedAt
+
+    CreateScheduledPostBody:
+      type: object
+      properties:
+        platform:
+          type: string
+        content:
+          type: string
+        scheduledAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+      required:
+        - platform
+        - content
+        - scheduledAt
+
+    UpdateScheduledPostBody:
+      type: object
+      properties:
+        platform:
+          type: string
+        content:
+          type: string
+        scheduledAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+
+    AiGenerateDraftBody:
+      type: object
+      properties:
+        type:
+          type: string
+        platform:
+          type: string
+        topic:
+          type: string
+        tone:
+          type: string
+        additionalContext:
+          type: string
+      required:
+        - type
+        - platform
+        - topic
+
+    AiGenerateDraftResponse:
+      type: object
+      properties:
+        draft:
+          type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+      required:
+        - draft
+        - suggestions
+
+    AiSeoResearchBody:
+      type: object
+      properties:
+        topic:
+          type: string
+        targetAudience:
+          type: string
+      required:
+        - topic
+
+    AiSeoResearchResponse:
+      type: object
+      properties:
+        keywords:
+          type: array
+          items:
+            type: string
+        questions:
+          type: array
+          items:
+            type: string
+        talkingPoints:
+          type: array
+          items:
+            type: string
+        aeoSummary:
+          type: string
+      required:
+        - keywords
+        - questions
+        - talkingPoints
+        - aeoSummary

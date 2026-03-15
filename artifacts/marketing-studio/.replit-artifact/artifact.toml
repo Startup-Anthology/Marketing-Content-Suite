@@ -1,0 +1,27 @@
+kind = "mobile"
+previewPath = "/"
+title = "Marketing Content Studio"
+version = "1.0.0"
+id = "artifacts/marketing-studio"
+router = "expo-domain"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+ensurePreviewReachable = "/status"
+localPort = 23704
+name = "expo"
+paths = ["/"]
+
+[services.development]
+run = "pnpm --filter @workspace/marketing-studio run dev"
+
+[services.env]
+PORT = "23704"
+BASE_PATH = "/"
+
+[services.production]
+build = ["pnpm", "--filter", "@workspace/marketing-studio", "run", "build"]
+run = ["pnpm", "--filter", "@workspace/marketing-studio", "run", "serve"]

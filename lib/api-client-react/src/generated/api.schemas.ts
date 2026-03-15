@@ -8,3 +8,121 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface ContentPiece {
+  id: number;
+  type: string;
+  platform: string;
+  title: string;
+  body: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateContentBody {
+  type: string;
+  platform: string;
+  title: string;
+  body: string;
+  status?: string;
+}
+
+export interface UpdateContentBody {
+  type?: string;
+  platform?: string;
+  title?: string;
+  body?: string;
+  status?: string;
+}
+
+export interface Storyboard {
+  id: number;
+  title: string;
+  type: string;
+  scenes: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateStoryboardBody {
+  title: string;
+  type: string;
+  scenes?: string;
+}
+
+export interface UpdateStoryboardBody {
+  title?: string;
+  type?: string;
+  scenes?: string;
+}
+
+export interface ResearchNote {
+  id: number;
+  category: string;
+  topic: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateResearchNoteBody {
+  category: string;
+  topic: string;
+  content: string;
+}
+
+export interface UpdateResearchNoteBody {
+  category?: string;
+  topic?: string;
+  content?: string;
+}
+
+export interface ScheduledPost {
+  id: number;
+  platform: string;
+  content: string;
+  scheduledAt: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateScheduledPostBody {
+  platform: string;
+  content: string;
+  scheduledAt: string;
+  status?: string;
+}
+
+export interface UpdateScheduledPostBody {
+  platform?: string;
+  content?: string;
+  scheduledAt?: string;
+  status?: string;
+}
+
+export interface AiGenerateDraftBody {
+  type: string;
+  platform: string;
+  topic: string;
+  tone?: string;
+  additionalContext?: string;
+}
+
+export interface AiGenerateDraftResponse {
+  draft: string;
+  suggestions: string[];
+}
+
+export interface AiSeoResearchBody {
+  topic: string;
+  targetAudience?: string;
+}
+
+export interface AiSeoResearchResponse {
+  keywords: string[];
+  questions: string[];
+  talkingPoints: string[];
+  aeoSummary: string;
+}
