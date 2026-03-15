@@ -66,6 +66,8 @@ export default function ResearchTab() {
     channels: "",
   });
 
+  const [hmwNotes, setHmwNotes] = useState<Record<number, string>>({});
+
   const DEFAULT_BUDGET: BudgetItem[] = [
     { category: "Content Creation", monthlyAmount: "" },
     { category: "Paid Ads", monthlyAmount: "" },
@@ -365,6 +367,36 @@ export default function ResearchTab() {
         {HMW_PROMPTS.map((prompt, i) => (
           <View key={i} style={styles.hmwCard}>
             <Text style={styles.hmwText}>{prompt}</Text>
+            <TextInput
+              style={styles.hmwInput}
+              placeholder="Jot your ideas here..."
+              placeholderTextColor={c.textMuted}
+              value={hmwNotes[i] || ""}
+              onChangeText={(v) =>
+                setHmwNotes((prev) => ({ ...prev, [i]: v }))
+              }
+              multiline
+              textAlignVertical="top"
+            />
+            {(hmwNotes[i] || "").trim() !== "" && (
+              <Pressable
+                style={({ pressed }) => [
+                  styles.hmwSaveBtn,
+                  pressed && { opacity: 0.7 },
+                ]}
+                onPress={() => {
+                  saveMutation.mutate({
+                    category: "hmw",
+                    topic: prompt,
+                    content: hmwNotes[i],
+                  });
+                  setHmwNotes((prev) => ({ ...prev, [i]: "" }));
+                }}
+              >
+                <Feather name="save" size={14} color={c.tint} />
+                <Text style={styles.hmwSaveBtnText}>Save Note</Text>
+              </Pressable>
+            )}
           </View>
         ))}
       </View>
@@ -603,6 +635,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: c.text,
     lineHeight: 22,
+  },
+  hmwInput: {
+    backgroundColor: c.inputBg,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    fontFamily: fonts.regular,
+    fontSize: 13,
+    color: c.text,
+    borderWidth: 1,
+    borderColor: c.border,
+    marginTop: spacing.sm,
+    minHeight: 40,
+  },
+  hmwSaveBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-end",
+    gap: 4,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: c.tint,
+    marginTop: spacing.sm,
+  },
+  hmwSaveBtnText: {
+    fontFamily: fonts.medium,
+    fontSize: 12,
+    color: c.tint,
   },
   personaCard: {
     backgroundColor: c.surface,
