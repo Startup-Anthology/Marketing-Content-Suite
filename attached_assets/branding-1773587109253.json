@@ -1,0 +1,140 @@
+{
+  "colorScheme": "light",
+  "fonts": [
+    {
+      "family": "Hanken Grotesk",
+      "role": "body"
+    },
+    {
+      "family": "League Spartan",
+      "role": "heading"
+    },
+    {
+      "family": "Lato",
+      "role": "unknown"
+    }
+  ],
+  "colors": {
+    "primary": "#0F1729",
+    "accent": "#BB935B",
+    "background": "#F8FAFC",
+    "textPrimary": "#5C6B7F",
+    "link": "#5C6B7F"
+  },
+  "typography": {
+    "fontFamilies": {
+      "primary": "Hanken Grotesk",
+      "heading": "League Spartan"
+    },
+    "fontStacks": {
+      "heading": [
+        "Lato",
+        "system-ui",
+        "sans-serif"
+      ],
+      "body": [
+        "Hanken Grotesk",
+        "system-ui",
+        "sans-serif"
+      ],
+      "paragraph": [
+        "Hanken Grotesk",
+        "system-ui",
+        "sans-serif"
+      ]
+    },
+    "fontSizes": {
+      "h1": "60px",
+      "h2": "30px",
+      "body": "12px"
+    }
+  },
+  "spacing": {
+    "baseUnit": 4,
+    "borderRadius": "5px"
+  },
+  "components": {
+    "buttonPrimary": {
+      "background": "#BB935B",
+      "textColor": "#FFFFFF",
+      "borderColor": "#BB935B",
+      "borderRadius": "6px",
+      "borderRadiusCorners": {
+        "topLeft": "6px",
+        "topRight": "6px",
+        "bottomRight": "6px",
+        "bottomLeft": "6px"
+      },
+      "shadow": "none"
+    },
+    "buttonSecondary": {
+      "background": "#F7F9FA",
+      "textColor": "#0F1729",
+      "borderColor": "#DFE1E3",
+      "borderRadius": "6px",
+      "borderRadiusCorners": {
+        "topLeft": "6px",
+        "topRight": "6px",
+        "bottomRight": "6px",
+        "bottomLeft": "6px"
+      },
+      "shadow": "none"
+    }
+  },
+  "images": {
+    "logo": "https://horizon.startupanthology.com/assets/logo.webp",
+    "favicon": "https://horizon.startupanthology.com/assets/favicon.webp",
+    "ogImage": "https://horizon.startupanthology.com/assets/og-image.png",
+    "logoHref": "File saved at: attached_assets/logoHref.html",
+    "logoAlt": "Horizon by Startup Anthology"
+  },
+  "__llm_logo_reasoning": {
+    "selectedIndex": 0,
+    "reasoning": "Selected #0 because it is visible, located in the header, links to the homepage, and matches the brand name 'Horizon by Startup Anthology'.",
+    "confidence": 0.9,
+    "source": "llm"
+  },
+  "__llm_button_reasoning": {
+    "primary": {
+      "index": 1,
+      "text": "Join the Beta — $25/mo",
+      "reasoning": "Button #1 ('Join the Beta — $25/mo') is the primary CTA due to its vibrant brand color (#BB935B) and action-oriented text, indicating a strong call to action."
+    },
+    "secondary": {
+      "index": 3,
+      "text": "See Live Demo",
+      "reasoning": "Button #3 ('See Live Demo') is selected as secondary because it has a different background color (#F7F9FA) and offers a less direct action compared to the primary CTA."
+    },
+    "confidence": 0.95
+  },
+  "personality": {
+    "tone": "professional",
+    "energy": "medium",
+    "targetAudience": "financial professionals and startups"
+  },
+  "designSystem": {
+    "framework": "tailwind",
+    "componentLibrary": ""
+  },
+  "confidence": {
+    "buttons": 0.95,
+    "colors": 0.9,
+    "overall": 0.925
+  },
+  "__llm_metadata": {
+    "logoSelection": {
+      "llmCalled": true,
+      "llmSucceeded": true,
+      "finalSource": "llm",
+      "rawLogoSelection": {
+        "selectedLogoIndex": 0,
+        "selectedLogoReasoning": "Selected #0 because it is visible, located in the header, links to the homepage, and matches the brand name 'Horizon by Startup Anthology'.",
+        "confidence": 0.9
+      }
+    },
+    "buttonClassification": {
+      "llmCalled": true,
+      "llmSucceeded": true
+    }
+  }
+}
