@@ -140,6 +140,10 @@ Expo React Native mobile app — Marketing Content Studio for Startup Anthology 
 - **Brand Guide API**: GET /api/brand-guide, PUT /api/brand-guide — singleton brand identity CRUD
 - **CRUD Routes**: /podcast-scripts, /interview-preps (GET list, POST create, GET/:id, DELETE/:id)
 - **Google Calendar Routes**: GET /api/google-calendar/status, GET /api/google-calendar/auth-url, GET /api/google-calendar/callback, POST /api/google-calendar/disconnect
+- **Social Accounts Routes**: GET /api/social-accounts, GET /api/social-accounts/status/:platform, GET /api/social-accounts/auth-url/:platformKey, GET /api/social-accounts/callback/:platform, POST /api/social-accounts/disconnect/:platform, POST /api/social-accounts/validate, POST /api/social-accounts/publish
+- **Social OAuth**: OAuth flows for LinkedIn, X/Twitter, Instagram, TikTok, YouTube with token exchange and secure storage
+- **Auto-publish**: Background job (60s interval) auto-publishes "ready" posts at their scheduled time when platform is connected
+- **Platform Validation**: Character limits enforced per platform (X/Twitter 280, LinkedIn 3000, Instagram/TikTok 2200, YouTube 5000)
 - **Fonts**: Inter (400/500/600/700)
 - **Port**: 23704 (via $PORT)
 

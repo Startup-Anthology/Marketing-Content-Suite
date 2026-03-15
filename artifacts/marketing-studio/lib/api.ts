@@ -270,6 +270,36 @@ export async function deleteInterviewPrep(id: number) {
   return apiFetch(`/interview-preps/${id}`, { method: "DELETE" });
 }
 
+export async function fetchSocialAccounts() {
+  return apiFetch("/social-accounts");
+}
+
+export async function fetchSocialAccountStatus(platform: string) {
+  return apiFetch(`/social-accounts/status/${encodeURIComponent(platform)}`);
+}
+
+export async function fetchSocialAuthUrl(platformKey: string) {
+  return apiFetch(`/social-accounts/auth-url/${encodeURIComponent(platformKey)}`);
+}
+
+export async function disconnectSocialAccount(platform: string) {
+  return apiFetch(`/social-accounts/disconnect/${encodeURIComponent(platform)}`, { method: "POST" });
+}
+
+export async function validatePostContent(platform: string, content: string) {
+  return apiFetch("/social-accounts/validate", {
+    method: "POST",
+    body: JSON.stringify({ platform, content }),
+  });
+}
+
+export async function publishPost(platform: string, content: string, postId?: number) {
+  return apiFetch("/social-accounts/publish", {
+    method: "POST",
+    body: JSON.stringify({ platform, content, postId }),
+  });
+}
+
 export async function fetchGoogleCalendarStatus() {
   return apiFetch("/google-calendar/status");
 }

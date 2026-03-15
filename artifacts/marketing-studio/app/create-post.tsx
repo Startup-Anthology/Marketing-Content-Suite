@@ -22,6 +22,9 @@ import {
   updateScheduledPost,
   deleteScheduledPost,
   fetchScheduledPost,
+  fetchSocialAccountStatus,
+  publishPost,
+  validatePostContent,
 } from "@/lib/api";
 
 const c = Colors.light;
@@ -45,6 +48,15 @@ export default function CreatePostScreen() {
   const [selectedTime, setSelectedTime] = useState("10:00");
   const [status, setStatus] = useState<"draft" | "ready">("draft");
   const [isInitialized, setIsInitialized] = useState(!isEditing);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  const { data: platformStatus } = useQuery({
+    queryKey: ["social-account-status", platform],
+    queryFn: () => fetchSocialAccountStatus(platform),
+    enabled: platform !== "Email",
+  });
+
+  const isConnected = platformStatus?.connected === true;
 
   const { data: existingPost, isLoading: isLoadingPost } = useQuery({
     queryKey: ["scheduled-post", numericPostId],
@@ -116,6 +128,68 @@ export default function CreatePostScreen() {
       router.back();
     },
   });
+
+  const publishMutation = useMutation({
+    mutationFn: async () => {
+      const validation = await validatePostContent(platform, content);
+      if (!validation.valid) {
+        throw new Error(validation.errors.join("; "));
+      }
+
+      const [hours, minutes] = selectedTime.split(":").map(Number);
+      const scheduledAt = new Date(baseDate);
+      scheduledAt.setHours(hours, minutes, 0, 0);
+
+      let postIdToPublish = numericPostId;
+      if (!isEditing) {
+        const created = await createScheduledPost({
+          platform,
+          content,
+          scheduledAt: scheduledAt.toISOString(),
+          status: "ready",
+        });
+        postIdToPublish = created.id;
+      }
+
+      return publishPost(platform, content, postIdToPublish);
+    },
+    onSuccess: (result) => {
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: ["scheduled-posts"] });
+        if (isEditing) {
+          queryClient.invalidateQueries({ queryKey: ["scheduled-post", numericPostId] });
+        }
+        if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert("Published!", `Your post has been published to ${platform}.`);
+        router.back();
+      } else {
+        Alert.alert("Publish Failed", result.error || "Could not publish to the platform.");
+      }
+    },
+    onError: (error: Error) => {
+      Alert.alert("Publish Error", error.message);
+    },
+  });
+
+  useEffect(() => {
+    if (content.trim() && platform !== "Email") {
+      const CHAR_LIMITS: Record<string, number> = {
+        "X/Twitter": 280,
+        LinkedIn: 3000,
+        Instagram: 2200,
+        TikTok: 2200,
+        YouTube: 5000,
+      };
+      const limit = CHAR_LIMITS[platform];
+      if (limit && content.length > limit) {
+        setValidationErrors([`${platform} posts cannot exceed ${limit} characters (currently ${content.length})`]);
+      } else {
+        setValidationErrors([]);
+      }
+    } else {
+      setValidationErrors([]);
+    }
+  }, [content, platform]);
 
   const handleDelete = () => {
     Alert.alert(
@@ -265,11 +339,53 @@ export default function CreatePostScreen() {
         ))}
       </View>
 
+      {validationErrors.length > 0 && (
+        <View style={styles.validationErrors}>
+          {validationErrors.map((err, i) => (
+            <View key={i} style={styles.validationErrorRow}>
+              <Feather name="alert-circle" size={14} color={c.error} />
+              <Text style={styles.validationErrorText}>{err}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {isConnected && platform !== "Email" && (
+        <View style={styles.connectionBadge}>
+          <Feather name="check-circle" size={14} color={c.success} />
+          <Text style={styles.connectionBadgeText}>
+            {platform} connected{platformStatus?.username ? ` as ${platformStatus.username}` : ""}
+          </Text>
+        </View>
+      )}
+
       {existingPost?.googleCalendarEventId && (
         <View style={styles.syncBadge}>
           <Feather name="calendar" size={14} color={c.success} />
           <Text style={styles.syncBadgeText}>Synced with Google Calendar</Text>
         </View>
+      )}
+
+      {isConnected && platform !== "Email" && (
+        <Pressable
+          style={({ pressed }) => [
+            styles.publishButton,
+            pressed && { opacity: 0.8 },
+            (!content.trim() || publishMutation.isPending || validationErrors.length > 0) && { opacity: 0.5 },
+          ]}
+          onPress={() => publishMutation.mutate()}
+          disabled={!content.trim() || publishMutation.isPending || validationErrors.length > 0}
+          testID="publish-post"
+        >
+          {publishMutation.isPending ? (
+            <ActivityIndicator size="small" color={c.background} />
+          ) : (
+            <Feather name="send" size={18} color={c.background} />
+          )}
+          <Text style={styles.publishButtonText}>
+            {publishMutation.isPending ? "Publishing..." : "Publish Now"}
+          </Text>
+        </Pressable>
       )}
 
       <Pressable
@@ -445,6 +561,57 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: c.success,
   },
+  validationErrors: {
+    marginTop: spacing.lg,
+    backgroundColor: c.error + "10",
+    borderRadius: radius.md,
+    padding: spacing.md,
+    borderWidth: 1,
+    borderColor: c.error + "30",
+  },
+  validationErrorRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    paddingVertical: 2,
+  },
+  validationErrorText: {
+    fontFamily: fonts.medium,
+    fontSize: 12,
+    color: c.error,
+    flex: 1,
+  },
+  connectionBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    backgroundColor: c.success + "15",
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.md,
+    marginTop: spacing.lg,
+    alignSelf: "flex-start",
+  },
+  connectionBadgeText: {
+    fontFamily: fonts.medium,
+    fontSize: 12,
+    color: c.success,
+  },
+  publishButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: c.success,
+    paddingVertical: spacing.lg,
+    borderRadius: radius.md,
+    gap: spacing.sm,
+    marginTop: spacing.xxl,
+  },
+  publishButtonText: {
+    fontFamily: fonts.semibold,
+    fontSize: 16,
+    color: c.background,
+  },
   saveButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -453,7 +620,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
     borderRadius: radius.md,
     gap: spacing.sm,
-    marginTop: spacing.xxl,
+    marginTop: spacing.md,
   },
   saveButtonText: {
     fontFamily: fonts.semibold,

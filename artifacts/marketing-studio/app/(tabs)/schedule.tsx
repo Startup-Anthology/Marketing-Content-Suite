@@ -153,11 +153,13 @@ function SwipeablePostCard({
                 styles.statusChip,
                 {
                   backgroundColor:
-                    item.status === "ready"
+                    item.status === "published"
                       ? c.success + "20"
-                      : item.status === "published"
+                      : item.status === "ready"
                         ? c.tint + "20"
-                        : c.warning + "20",
+                        : item.status === "failed"
+                          ? c.error + "20"
+                          : c.warning + "20",
                 },
               ]}
             >
@@ -166,11 +168,13 @@ function SwipeablePostCard({
                   styles.statusChipText,
                   {
                     color:
-                      item.status === "ready"
+                      item.status === "published"
                         ? c.success
-                        : item.status === "published"
+                        : item.status === "ready"
                           ? c.tint
-                          : c.warning,
+                          : item.status === "failed"
+                            ? c.error
+                            : c.warning,
                   },
                 ]}
               >

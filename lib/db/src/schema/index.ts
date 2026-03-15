@@ -7,3 +7,4 @@ export * from "./scheduled_posts";
 export * from "./brand_guide";
 export * from "./podcast_scripts";
 export * from "./interview_preps";
+export * from "./social_accounts";
