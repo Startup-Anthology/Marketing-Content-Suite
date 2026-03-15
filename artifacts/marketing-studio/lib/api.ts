@@ -324,10 +324,6 @@ export async function updateProfile(data: {
   });
 }
 
-export async function fetchSocialAccounts() {
-  return apiFetch("/social-accounts");
-}
-
 export async function addSocialAccount(data: {
   platform: string;
   username: string;
