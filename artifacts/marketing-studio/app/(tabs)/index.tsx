@@ -25,6 +25,11 @@ const CONTENT_TYPES = [
   { label: "Blog Post", icon: "file-text" as const, type: "blog" },
 ];
 
+const PODCAST_TOOLS = [
+  { label: "Podcast Generator", icon: "mic" as const, route: "/podcast-generator" as const },
+  { label: "Interview Prep", icon: "users" as const, route: "/interview-prep" as const },
+];
+
 export default function CreateTab() {
   const insets = useSafeAreaInsets();
   const webTop = Platform.OS === "web" ? 67 : 0;
@@ -62,6 +67,29 @@ export default function CreateTab() {
             </View>
             <Text style={styles.typeLabel}>{item.label}</Text>
             <Feather name="plus" size={16} color={c.textSecondary} />
+          </Pressable>
+        ))}
+      </View>
+
+      <View style={styles.podcastHeader}>
+        <Text style={styles.sectionTitle}>Podcast</Text>
+      </View>
+      <View style={styles.podcastGrid}>
+        {PODCAST_TOOLS.map((item) => (
+          <Pressable
+            key={item.route}
+            style={({ pressed }) => [
+              styles.podcastCard,
+              pressed && styles.typeCardPressed,
+            ]}
+            onPress={() => router.push(item.route)}
+            testID={`podcast-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
+          >
+            <View style={styles.podcastIconWrap}>
+              <Feather name={item.icon} size={22} color={c.tint} />
+            </View>
+            <Text style={styles.typeLabel}>{item.label}</Text>
+            <Feather name="chevron-right" size={16} color={c.textSecondary} />
           </Pressable>
         ))}
       </View>
@@ -210,6 +238,34 @@ const styles = StyleSheet.create({
     fontFamily: fonts.semibold,
     fontSize: 14,
     color: c.text,
+  },
+  podcastHeader: {
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xxl,
+    paddingBottom: spacing.md,
+  },
+  podcastGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    paddingHorizontal: spacing.lg,
+    gap: spacing.md,
+  },
+  podcastCard: {
+    width: "47%",
+    backgroundColor: c.surface,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    gap: spacing.sm,
+    borderWidth: 1,
+    borderColor: c.tint + "30",
+  },
+  podcastIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.md,
+    backgroundColor: c.tint + "15",
+    alignItems: "center",
+    justifyContent: "center",
   },
   recentHeader: {
     flexDirection: "row",

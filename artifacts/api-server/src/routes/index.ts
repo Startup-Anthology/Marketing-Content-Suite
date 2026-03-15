@@ -6,6 +6,8 @@ import researchNotesRouter from "./research-notes";
 import scheduledPostsRouter from "./scheduled-posts";
 import aiRouter from "./ai";
 import brandGuideRouter from "./brand-guide";
+import podcastScriptsRouter from "./podcast-scripts";
+import interviewPrepsRouter from "./interview-preps";
 
 const router: IRouter = Router();
 
@@ -16,5 +18,7 @@ router.use(researchNotesRouter);
 router.use(scheduledPostsRouter);
 router.use(aiRouter);
 router.use(brandGuideRouter);
+router.use(podcastScriptsRouter);
+router.use(interviewPrepsRouter);
 
 export default router;

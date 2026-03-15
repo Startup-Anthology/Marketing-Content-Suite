@@ -154,3 +154,73 @@ export async function saveBrandGuide(data: {
     body: JSON.stringify(data),
   });
 }
+
+export async function aiGeneratePodcastScript(data: {
+  topic: string;
+  format: string;
+  targetLength: string;
+  episodeTitle: string;
+  brandGuide?: string;
+}) {
+  return apiFetch("/ai/podcast-script", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function aiGenerateInterviewPrep(data: {
+  guestName: string;
+  guestBio: string;
+  interviewTopic: string;
+  episodeLength: string;
+  brandGuide?: string;
+}) {
+  return apiFetch("/ai/interview-prep", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function fetchPodcastScripts() {
+  return apiFetch("/podcast-scripts");
+}
+
+export async function createPodcastScript(data: {
+  episodeTitle: string;
+  topic: string;
+  format: string;
+  targetLength: string;
+  script: string;
+  status?: string;
+}) {
+  return apiFetch("/podcast-scripts", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deletePodcastScript(id: number) {
+  return apiFetch(`/podcast-scripts/${id}`, { method: "DELETE" });
+}
+
+export async function fetchInterviewPreps() {
+  return apiFetch("/interview-preps");
+}
+
+export async function createInterviewPrep(data: {
+  guestName: string;
+  guestBio: string;
+  interviewTopic: string;
+  episodeLength: string;
+  content: string;
+  status?: string;
+}) {
+  return apiFetch("/interview-preps", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteInterviewPrep(id: number) {
+  return apiFetch(`/interview-preps/${id}`, { method: "DELETE" });
+}

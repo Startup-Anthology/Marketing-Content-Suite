@@ -64,6 +64,22 @@ function RootLayoutNav() {
           headerStyle: { backgroundColor: Colors.light.surface },
         }}
       />
+      <Stack.Screen
+        name="podcast-generator"
+        options={{
+          title: "Podcast Generator",
+          presentation: "modal",
+          headerStyle: { backgroundColor: Colors.light.surface },
+        }}
+      />
+      <Stack.Screen
+        name="interview-prep"
+        options={{
+          title: "Interview Prep",
+          presentation: "modal",
+          headerStyle: { backgroundColor: Colors.light.surface },
+        }}
+      />
     </Stack>
   );
 }

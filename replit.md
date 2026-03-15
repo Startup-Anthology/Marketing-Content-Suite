@@ -113,7 +113,7 @@ Isolated frontend sandbox for UI prototyping. Components are rendered via a Vite
 Expo React Native mobile app — Marketing Content Studio for Startup Anthology founders. Styled with SA brand colors (Black #000000, SA Gold #BB935B).
 
 - **Tabs**: Create, Studio, Research, Schedule, Brand, Help, Settings
-- **Modals**: create-content, create-storyboard, create-post
+- **Modals**: create-content, create-storyboard, create-post, podcast-generator, interview-prep
 - **Features**:
   - AI-powered content generation (social posts, newsletters, captions, blog posts)
   - Storyboard & ad creative builder with scene management
@@ -122,10 +122,13 @@ Expo React Native mobile app — Marketing Content Studio for Startup Anthology 
   - Brand Guide — define brand identity (name, voice, tone, colors, fonts, logo, story) with live preview; auto-injected into AI prompts
   - Help — searchable FAQ, feature summaries, and branding guide reference
   - Brand settings display
+  - Podcast Generator: AI-powered episode script generation (solo, duo, interview, debate, narrative formats) with structured output (cold open, setup, segments, takeaways, outro), speaker tag rendering, per-section copy, and draft saving
+  - Interview Prep: AI-powered interview preparation (guest brief, 15-20 structured questions by segment, follow-up suggestions, run-of-show timeline), with tabbed output view, export/share, and draft saving
 - **API**: Uses `lib/api.ts` helper to call `@workspace/api-server` endpoints
-- **DB Tables**: content_pieces, storyboards, research_notes, scheduled_posts, brand_guide
-- **AI Routes**: POST /api/ai/generate-draft, POST /api/ai/seo-research (OpenAI gpt-5.2) — both inject brand context from saved brand guide
+- **DB Tables**: content_pieces, storyboards, research_notes, scheduled_posts, brand_guide, podcast_scripts, interview_preps
+- **AI Routes**: POST /api/ai/generate-draft, POST /api/ai/seo-research, POST /api/ai/podcast-script, POST /api/ai/interview-prep (OpenAI gpt-5.2) — both inject brand context from saved brand guide
 - **Brand Guide API**: GET /api/brand-guide, PUT /api/brand-guide — singleton brand identity CRUD
+- **CRUD Routes**: /podcast-scripts, /interview-preps (GET list, POST create, GET/:id, DELETE/:id)
 - **Fonts**: Inter (400/500/600/700)
 - **Port**: 23704 (via $PORT)
 
