@@ -1,7 +1,3 @@
-import Colors from "./colors";
-
-const c = Colors.light;
-
 export const spacing = {
   xs: 4,
   sm: 8,
@@ -46,5 +42,3 @@ export const platformIcons: Record<string, { family: string; name: string }> = {
   YouTube: { family: "MaterialCommunityIcons", name: "youtube" },
   Facebook: { family: "MaterialCommunityIcons", name: "facebook" },
 };
-
-export { c as colors };

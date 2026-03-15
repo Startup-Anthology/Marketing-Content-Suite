@@ -1,6 +1,6 @@
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import type { ComponentProps } from "react";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Image,
   Modal,
@@ -12,8 +12,9 @@ import {
 } from "react-native";
 import type { ImageSourcePropType } from "react-native";
 
-import Colors from "@/constants/colors";
+import type { ColorPalette } from "@/constants/colors";
 import { fonts, spacing, radius } from "@/constants/theme";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const LOGO_ASSETS: Record<string, ImageSourcePropType> = {
   "v-badge-black.png": require("@/assets/logos/v-badge-black.png"),
@@ -25,8 +26,6 @@ const LOGO_ASSETS: Record<string, ImageSourcePropType> = {
   "h-badge-black.png": require("@/assets/logos/h-badge-black.png"),
   "h-white.png": require("@/assets/logos/h-white.png"),
 };
-
-const c = Colors.light;
 
 type GuideSection =
   | "overview"
@@ -173,6 +172,8 @@ interface BrandGuideViewerProps {
 }
 
 export default function BrandGuideViewer({ visible, onClose, onUseAsTemplate }: BrandGuideViewerProps) {
+  const { colors: c } = useTheme();
+  const s = useMemo(() => createS(c), [c]);
   const [activeSection, setActiveSection] = useState<GuideSection>("overview");
 
   const renderSectionHeader = (title: string, subtitle?: string) => (
@@ -599,7 +600,7 @@ export default function BrandGuideViewer({ visible, onClose, onUseAsTemplate }: 
   );
 }
 
-const s = StyleSheet.create({
+const createS = (c: ColorPalette) => StyleSheet.create({
   container: { flex: 1, backgroundColor: c.background },
   header: {
     flexDirection: "row",

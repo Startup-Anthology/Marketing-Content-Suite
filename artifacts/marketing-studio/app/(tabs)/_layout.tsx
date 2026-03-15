@@ -7,7 +7,7 @@ import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import { Platform, StyleSheet, View } from "react-native";
 
-import Colors from "@/constants/colors";
+import { useTheme } from "@/contexts/ThemeContext";
 
 function NativeTabLayout() {
   return (
@@ -35,18 +35,19 @@ function NativeTabLayout() {
 function ClassicTabLayout() {
   const isIOS = Platform.OS === "ios";
   const isWeb = Platform.OS === "web";
+  const { colors: c, isDark } = useTheme();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors.light.tint,
-        tabBarInactiveTintColor: Colors.light.tabIconDefault,
+        tabBarActiveTintColor: c.tint,
+        tabBarInactiveTintColor: c.tabIconDefault,
         headerShown: false,
         tabBarStyle: {
           position: "absolute" as const,
-          backgroundColor: isIOS ? "transparent" : Colors.light.background,
+          backgroundColor: isIOS ? "transparent" : c.background,
           borderTopWidth: isWeb ? 1 : 0,
-          borderTopColor: Colors.light.border,
+          borderTopColor: c.border,
           elevation: 0,
           ...(isWeb ? { height: 84 } : {}),
         },
@@ -54,14 +55,14 @@ function ClassicTabLayout() {
           isIOS ? (
             <BlurView
               intensity={100}
-              tint="dark"
+              tint={isDark ? "dark" : "light"}
               style={StyleSheet.absoluteFill}
             />
           ) : isWeb ? (
             <View
               style={[
                 StyleSheet.absoluteFill,
-                { backgroundColor: Colors.light.background },
+                { backgroundColor: c.background },
               ]}
             />
           ) : null,
@@ -125,4 +126,3 @@ export default function TabLayout() {
   }
   return <ClassicTabLayout />;
 }
-

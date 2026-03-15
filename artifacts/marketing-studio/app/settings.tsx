@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import type { ComponentProps } from "react";
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -19,9 +19,10 @@ import {
 } from "react-native";
 
 import BrandGuideViewer from "@/components/BrandGuideViewer";
-import Colors from "@/constants/colors";
+import type { ColorPalette } from "@/constants/colors";
 import { fonts, spacing, radius } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import {
   fetchBrandGuide,
   saveBrandGuide,
@@ -36,8 +37,6 @@ import {
   fetchAdminUsers,
   updateAdminUser,
 } from "@/lib/api";
-
-const c = Colors.light;
 
 type MCIName = ComponentProps<typeof MaterialCommunityIcons>["name"];
 
@@ -115,6 +114,8 @@ interface AdminUser {
 }
 
 export default function SettingsScreen() {
+  const { colors: c } = useTheme();
+  const styles = useMemo(() => createStyles(c), [c]);
   const queryClient = useQueryClient();
   const router = useRouter();
   const { user, logout, updateUser } = useAuth();
@@ -1059,7 +1060,7 @@ export default function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ColorPalette) => StyleSheet.create({
   container: { flex: 1, backgroundColor: c.background },
   scrollContent: { paddingBottom: 120 },
   sectionSwitcher: {

@@ -2,7 +2,7 @@ import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as Clipboard from "expo-clipboard";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -17,18 +17,19 @@ import {
 } from "react-native";
 import * as Haptics from "expo-haptics";
 
-import Colors from "@/constants/colors";
+import type { ColorPalette } from "@/constants/colors";
 import { fonts, spacing, radius, platformColors } from "@/constants/theme";
+import { useTheme } from "@/contexts/ThemeContext";
 import { aiGenerateDraft, createContent } from "@/lib/api";
-
-const c = Colors.light;
 
 const PLATFORMS = ["LinkedIn", "X/Twitter", "Instagram", "Email"];
 const TONES = ["Professional", "Casual", "Witty", "Inspirational", "Educational"];
 
 export default function CreateContentScreen() {
+  const { colors: c } = useTheme();
   const { type = "social" } = useLocalSearchParams<{ type: string }>();
   const queryClient = useQueryClient();
+  const styles = useMemo(() => createStyles(c), [c]);
   const [platform, setPlatform] = useState("LinkedIn");
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -268,7 +269,7 @@ export default function CreateContentScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ColorPalette) => StyleSheet.create({
   container: { flex: 1, backgroundColor: c.surface },
   scrollContent: { padding: spacing.xl, paddingBottom: 40 },
   typeChip: {

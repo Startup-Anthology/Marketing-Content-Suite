@@ -1,7 +1,7 @@
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -15,8 +15,9 @@ import {
 } from "react-native";
 import * as Haptics from "expo-haptics";
 
-import Colors from "@/constants/colors";
+import type { ColorPalette } from "@/constants/colors";
 import { fonts, spacing, radius, platformColors } from "@/constants/theme";
+import { useTheme } from "@/contexts/ThemeContext";
 import {
   createScheduledPost,
   updateScheduledPost,
@@ -27,8 +28,6 @@ import {
   validatePostContent,
 } from "@/lib/api";
 
-const c = Colors.light;
-
 const PLATFORMS = ["LinkedIn", "X/Twitter", "Instagram", "TikTok", "YouTube", "Email"];
 const TIMES = [
   "09:00", "10:00", "11:00", "12:00",
@@ -37,6 +36,8 @@ const TIMES = [
 ];
 
 export default function CreatePostScreen() {
+  const { colors: c } = useTheme();
+  const styles = useMemo(() => createStyles(c), [c]);
   const { date: dateParam, postId } = useLocalSearchParams<{ date?: string; postId?: string }>();
   const navigation = useNavigation();
   const queryClient = useQueryClient();
@@ -435,7 +436,7 @@ export default function CreatePostScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ColorPalette) => StyleSheet.create({
   container: { flex: 1, backgroundColor: c.surface },
   scrollContent: { padding: spacing.xl, paddingBottom: 40 },
   loadingContainer: {

@@ -1,7 +1,7 @@
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -16,11 +16,10 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 
-import Colors from "@/constants/colors";
+import type { ColorPalette } from "@/constants/colors";
 import { fonts, spacing, radius } from "@/constants/theme";
+import { useTheme } from "@/contexts/ThemeContext";
 import { aiSeoResearch, createResearchNote, fetchResearchNotes } from "@/lib/api";
-
-const c = Colors.light;
 
 type TabKey = "seo" | "strategy";
 
@@ -46,6 +45,7 @@ const HMW_PROMPTS = [
 ];
 
 export default function ResearchTab() {
+  const { colors: c, isDark, toggleTheme } = useTheme();
   const insets = useSafeAreaInsets();
   const webTop = Platform.OS === "web" ? 67 : 0;
   const queryClient = useQueryClient();
@@ -100,6 +100,8 @@ export default function ResearchTab() {
       Alert.alert("Saved", "Research note saved successfully");
     },
   });
+
+  const styles = useMemo(() => createStyles(c), [c]);
 
   const renderSeoTab = () => (
     <ScrollView
@@ -436,9 +438,14 @@ export default function ResearchTab() {
       <View style={styles.header}>
         <View style={styles.headerRow}>
           <Text style={styles.headerTitle}>Research</Text>
-          <Pressable onPress={() => router.push("/settings")} style={({ pressed }) => [styles.gearBtn, pressed && { opacity: 0.6 }]} testID="settings-gear">
-            <Feather name="settings" size={22} color={c.textSecondary} />
-          </Pressable>
+          <View style={styles.headerActions}>
+            <Pressable onPress={toggleTheme} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.6 }]} testID="theme-toggle">
+              <Feather name={isDark ? "moon" : "sun"} size={20} color={c.textSecondary} />
+            </Pressable>
+            <Pressable onPress={() => router.push("/settings")} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.6 }]} testID="settings-gear">
+              <Feather name="settings" size={22} color={c.textSecondary} />
+            </Pressable>
+          </View>
         </View>
         <Text style={styles.headerSubtitle}>
           Discover keywords, questions & strategy
@@ -469,11 +476,12 @@ export default function ResearchTab() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ColorPalette) => StyleSheet.create({
   container: { flex: 1, backgroundColor: c.background },
   header: { paddingHorizontal: spacing.xl, paddingBottom: spacing.md },
   headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  gearBtn: { padding: 4 },
+  headerActions: { flexDirection: "row", alignItems: "center", gap: 8 },
+  headerBtn: { padding: 4 },
   headerTitle: { fontFamily: fonts.bold, fontSize: 28, color: c.text },
   headerSubtitle: {
     fontFamily: fonts.regular,

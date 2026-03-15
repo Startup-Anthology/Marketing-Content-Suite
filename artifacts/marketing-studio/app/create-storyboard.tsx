@@ -1,7 +1,7 @@
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -14,11 +14,10 @@ import {
 } from "react-native";
 import * as Haptics from "expo-haptics";
 
-import Colors from "@/constants/colors";
+import type { ColorPalette } from "@/constants/colors";
 import { fonts, spacing, radius } from "@/constants/theme";
+import { useTheme } from "@/contexts/ThemeContext";
 import { createStoryboard, aiGenerateStoryboard, aiGenerateAdCreative } from "@/lib/api";
-
-const c = Colors.light;
 
 interface Scene {
   id: string;
@@ -36,8 +35,10 @@ function generateId() {
 }
 
 export default function CreateStoryboardScreen() {
+  const { colors: c } = useTheme();
   const { type = "storyboard" } = useLocalSearchParams<{ type: string }>();
   const queryClient = useQueryClient();
+  const styles = useMemo(() => createStyles(c), [c]);
   const [title, setTitle] = useState("");
   const [scenes, setScenes] = useState<Scene[]>([]);
 
@@ -456,7 +457,7 @@ export default function CreateStoryboardScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ColorPalette) => StyleSheet.create({
   container: { flex: 1, backgroundColor: c.surface },
   scrollContent: { padding: spacing.xl, paddingBottom: 40 },
   typeChip: {

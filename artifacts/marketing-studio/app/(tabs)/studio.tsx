@@ -1,7 +1,7 @@
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   FlatList,
   Platform,
@@ -13,15 +13,15 @@ import {
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Colors from "@/constants/colors";
+import type { ColorPalette } from "@/constants/colors";
 import { fonts, spacing, radius } from "@/constants/theme";
+import { useTheme } from "@/contexts/ThemeContext";
 import { fetchStoryboards } from "@/lib/api";
-
-const c = Colors.light;
 
 type TabKey = "storyboards" | "ads";
 
 export default function StudioTab() {
+  const { colors: c, isDark, toggleTheme } = useTheme();
   const insets = useSafeAreaInsets();
   const webTop = Platform.OS === "web" ? 67 : 0;
   const [activeTab, setActiveTab] = useState<TabKey>("storyboards");
@@ -29,6 +29,7 @@ export default function StudioTab() {
     queryKey: ["storyboards"],
     queryFn: fetchStoryboards,
   });
+  const styles = useMemo(() => createStyles(c), [c]);
 
   const filtered = storyboards.filter((s: { type: string }) =>
     activeTab === "storyboards" ? s.type === "storyboard" : s.type === "ad-creative"
@@ -39,9 +40,14 @@ export default function StudioTab() {
       <View style={styles.header}>
         <View style={styles.headerRow}>
           <Text style={styles.headerTitle}>Studio</Text>
-          <Pressable onPress={() => router.push("/settings")} style={({ pressed }) => [styles.gearBtn, pressed && { opacity: 0.6 }]} testID="settings-gear">
-            <Feather name="settings" size={22} color={c.textSecondary} />
-          </Pressable>
+          <View style={styles.headerActions}>
+            <Pressable onPress={toggleTheme} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.6 }]} testID="theme-toggle">
+              <Feather name={isDark ? "moon" : "sun"} size={20} color={c.textSecondary} />
+            </Pressable>
+            <Pressable onPress={() => router.push("/settings")} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.6 }]} testID="settings-gear">
+              <Feather name="settings" size={22} color={c.textSecondary} />
+            </Pressable>
+          </View>
         </View>
         <Text style={styles.headerSubtitle}>
           Plan visual stories and ad creatives
@@ -149,11 +155,12 @@ export default function StudioTab() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ColorPalette) => StyleSheet.create({
   container: { flex: 1, backgroundColor: c.background },
   header: { paddingHorizontal: spacing.xl, paddingBottom: spacing.md },
   headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  gearBtn: { padding: 4 },
+  headerActions: { flexDirection: "row", alignItems: "center", gap: 8 },
+  headerBtn: { padding: 4 },
   headerTitle: { fontFamily: fonts.bold, fontSize: 28, color: c.text },
   headerSubtitle: {
     fontFamily: fonts.regular,

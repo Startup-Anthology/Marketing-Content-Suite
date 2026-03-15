@@ -2,7 +2,7 @@ import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as Clipboard from "expo-clipboard";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -16,16 +16,15 @@ import {
 } from "react-native";
 import * as Haptics from "expo-haptics";
 
-import Colors from "@/constants/colors";
+import type { ColorPalette } from "@/constants/colors";
 import { fonts, spacing, radius } from "@/constants/theme";
+import { useTheme } from "@/contexts/ThemeContext";
 import {
   aiGeneratePodcastScript,
   createPodcastScript,
   fetchPodcastScripts,
   deletePodcastScript,
 } from "@/lib/api";
-
-const c = Colors.light;
 
 const FORMATS = [
   { label: "Solo Explainer", value: "solo", icon: "account" as const },
@@ -63,6 +62,8 @@ type SavedScript = {
 };
 
 export default function PodcastGeneratorScreen() {
+  const { colors: c } = useTheme();
+  const styles = useMemo(() => createStyles(c), [c]);
   const queryClient = useQueryClient();
   const [topic, setTopic] = useState("");
   const [episodeTitle, setEpisodeTitle] = useState("");
@@ -500,7 +501,7 @@ export default function PodcastGeneratorScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ColorPalette) => StyleSheet.create({
   container: { flex: 1, backgroundColor: c.surface },
   scrollContent: { padding: spacing.xl, paddingBottom: 120 },
   topRow: {

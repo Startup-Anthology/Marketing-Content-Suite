@@ -16,9 +16,8 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { ThemeProvider } from "@/contexts/ThemeContext";
+import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import Colors from "@/constants/colors";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -32,14 +31,15 @@ const queryClient = new QueryClient();
 
 function RootLayoutNav() {
   const { user, isLoading } = useAuth();
+  const { colors: c, isDark } = useTheme();
   const segments = useSegments();
 
   const isOnLoginPage = segments[0] === "login";
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, backgroundColor: Colors.light.background, alignItems: "center", justifyContent: "center" }}>
-        <ActivityIndicator size="large" color={Colors.light.tint} />
+      <View style={{ flex: 1, backgroundColor: c.background, alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator size="large" color={c.tint} />
       </View>
     );
   }
@@ -56,9 +56,9 @@ function RootLayoutNav() {
     <Stack
       screenOptions={{
         headerBackTitle: "Back",
-        headerStyle: { backgroundColor: Colors.light.background },
-        headerTintColor: Colors.light.text,
-        contentStyle: { backgroundColor: Colors.light.background },
+        headerStyle: { backgroundColor: c.background },
+        headerTintColor: c.text,
+        contentStyle: { backgroundColor: c.background },
       }}
     >
       <Stack.Screen
@@ -74,7 +74,7 @@ function RootLayoutNav() {
         options={{
           title: "New Content",
           presentation: "modal",
-          headerStyle: { backgroundColor: Colors.light.surface },
+          headerStyle: { backgroundColor: c.surface },
         }}
       />
       <Stack.Screen
@@ -82,7 +82,7 @@ function RootLayoutNav() {
         options={{
           title: "New Storyboard",
           presentation: "modal",
-          headerStyle: { backgroundColor: Colors.light.surface },
+          headerStyle: { backgroundColor: c.surface },
         }}
       />
       <Stack.Screen
@@ -90,7 +90,7 @@ function RootLayoutNav() {
         options={{
           title: "Schedule Post",
           presentation: "modal",
-          headerStyle: { backgroundColor: Colors.light.surface },
+          headerStyle: { backgroundColor: c.surface },
         }}
       />
       <Stack.Screen
@@ -98,7 +98,7 @@ function RootLayoutNav() {
         options={{
           title: "Podcast Generator",
           presentation: "modal",
-          headerStyle: { backgroundColor: Colors.light.surface },
+          headerStyle: { backgroundColor: c.surface },
         }}
       />
       <Stack.Screen
@@ -106,7 +106,7 @@ function RootLayoutNav() {
         options={{
           title: "Interview Prep",
           presentation: "modal",
-          headerStyle: { backgroundColor: Colors.light.surface },
+          headerStyle: { backgroundColor: c.surface },
         }}
       />
       <Stack.Screen
@@ -114,7 +114,7 @@ function RootLayoutNav() {
         options={{
           title: "Settings",
           presentation: "modal",
-          headerStyle: { backgroundColor: Colors.light.background },
+          headerStyle: { backgroundColor: c.background },
         }}
       />
     </Stack>
@@ -145,7 +145,7 @@ export default function RootLayout() {
             <AuthProvider>
               <GestureHandlerRootView>
                 <KeyboardProvider>
-                  <StatusBar style="light" />
+                  <ThemedStatusBar />
                   <RootLayoutNav />
                 </KeyboardProvider>
               </GestureHandlerRootView>
@@ -155,4 +155,9 @@ export default function RootLayout() {
       </ErrorBoundary>
     </SafeAreaProvider>
   );
+}
+
+function ThemedStatusBar() {
+  const { isDark } = useTheme();
+  return <StatusBar style={isDark ? "light" : "dark"} />;
 }

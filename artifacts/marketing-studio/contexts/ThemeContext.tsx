@@ -1,27 +1,53 @@
-import React, { createContext, useContext, useMemo } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Colors from "@/constants/colors";
+import type { ColorPalette } from "@/constants/colors";
 import { spacing, radius, fonts } from "@/constants/theme";
 
+const THEME_STORAGE_KEY = "sa_theme_mode";
+
+type ThemeMode = "dark" | "light";
+
 interface ThemeContextValue {
-  colors: typeof Colors.light;
+  colors: ColorPalette;
   spacing: typeof spacing;
   radius: typeof radius;
   fonts: typeof fonts;
   isDark: boolean;
+  toggleTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [mode, setMode] = useState<ThemeMode>("dark");
+
+  useEffect(() => {
+    AsyncStorage.getItem(THEME_STORAGE_KEY).then((stored) => {
+      if (stored === "light" || stored === "dark") {
+        setMode(stored);
+      }
+    }).catch(() => {});
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setMode((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      AsyncStorage.setItem(THEME_STORAGE_KEY, next).catch(() => {});
+      return next;
+    });
+  }, []);
+
   const value = useMemo<ThemeContextValue>(
     () => ({
-      colors: Colors.light,
+      colors: mode === "dark" ? Colors.dark : Colors.light,
       spacing,
       radius,
       fonts,
-      isDark: true,
+      isDark: mode === "dark",
+      toggleTheme,
     }),
-    []
+    [mode, toggleTheme]
   );
 
   return (

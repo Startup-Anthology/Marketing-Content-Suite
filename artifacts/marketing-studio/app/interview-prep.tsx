@@ -2,7 +2,7 @@ import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as Clipboard from "expo-clipboard";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -17,16 +17,15 @@ import {
 } from "react-native";
 import * as Haptics from "expo-haptics";
 
-import Colors from "@/constants/colors";
+import type { ColorPalette } from "@/constants/colors";
 import { fonts, spacing, radius } from "@/constants/theme";
+import { useTheme } from "@/contexts/ThemeContext";
 import {
   aiGenerateInterviewPrep,
   createInterviewPrep,
   fetchInterviewPreps,
   deleteInterviewPrep,
 } from "@/lib/api";
-
-const c = Colors.light;
 
 const EPISODE_LENGTHS = ["30", "45", "60", "90"];
 
@@ -70,6 +69,8 @@ const SEGMENT_LABELS: Record<string, { label: string; color: string }> = {
 };
 
 export default function InterviewPrepScreen() {
+  const { colors: c } = useTheme();
+  const styles = useMemo(() => createStyles(c), [c]);
   const queryClient = useQueryClient();
   const [guestName, setGuestName] = useState("");
   const [guestBio, setGuestBio] = useState("");
@@ -478,7 +479,7 @@ export default function InterviewPrepScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ColorPalette) => StyleSheet.create({
   container: { flex: 1, backgroundColor: c.surface },
   scrollContent: { padding: spacing.xl, paddingBottom: 120 },
   topRow: {

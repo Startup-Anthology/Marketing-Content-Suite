@@ -16,11 +16,10 @@ import { Swipeable } from "react-native-gesture-handler";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Colors from "@/constants/colors";
+import type { ColorPalette } from "@/constants/colors";
 import { fonts, spacing, radius, platformColors } from "@/constants/theme";
+import { useTheme } from "@/contexts/ThemeContext";
 import { fetchScheduledPosts, deleteScheduledPost } from "@/lib/api";
-
-const c = Colors.light;
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -56,10 +55,14 @@ function SwipeablePostCard({
   item,
   onPress,
   onDelete,
+  c,
+  styles,
 }: {
   item: PostItem;
   onPress: () => void;
   onDelete: () => void;
+  c: ColorPalette;
+  styles: ReturnType<typeof createStyles>;
 }) {
   const renderRightActions = useCallback(
     (_progress: Animated.AnimatedInterpolation<number>, dragX: Animated.AnimatedInterpolation<number>) => {
@@ -80,7 +83,7 @@ function SwipeablePostCard({
         </Pressable>
       );
     },
-    [onDelete]
+    [onDelete, styles]
   );
 
   return (
@@ -190,12 +193,14 @@ function SwipeablePostCard({
 }
 
 export default function ScheduleTab() {
+  const { colors: c, isDark, toggleTheme } = useTheme();
   const insets = useSafeAreaInsets();
   const webTop = Platform.OS === "web" ? 67 : 0;
   const queryClient = useQueryClient();
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const weekDates = useMemo(() => getWeekDates(weekOffset), [weekOffset]);
+  const styles = useMemo(() => createStyles(c), [c]);
 
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ["scheduled-posts"],
@@ -248,9 +253,14 @@ export default function ScheduleTab() {
       <View style={styles.header}>
         <View style={styles.headerRow}>
           <Text style={styles.headerTitle}>Schedule</Text>
-          <Pressable onPress={() => router.push("/settings")} style={({ pressed }) => [styles.gearBtn, pressed && { opacity: 0.6 }]} testID="settings-gear">
-            <Feather name="settings" size={22} color={c.textSecondary} />
-          </Pressable>
+          <View style={styles.headerActions}>
+            <Pressable onPress={toggleTheme} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.6 }]} testID="theme-toggle">
+              <Feather name={isDark ? "moon" : "sun"} size={20} color={c.textSecondary} />
+            </Pressable>
+            <Pressable onPress={() => router.push("/settings")} style={({ pressed }) => [styles.headerBtn, pressed && { opacity: 0.6 }]} testID="settings-gear">
+              <Feather name="settings" size={22} color={c.textSecondary} />
+            </Pressable>
+          </View>
         </View>
         <Text style={styles.headerSubtitle}>Plan, schedule & ship your posts</Text>
       </View>
@@ -351,6 +361,8 @@ export default function ScheduleTab() {
           renderItem={({ item }) => (
             <SwipeablePostCard
               item={item}
+              c={c}
+              styles={styles}
               onPress={() =>
                 router.push({
                   pathname: "/create-post",
@@ -366,11 +378,12 @@ export default function ScheduleTab() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ColorPalette) => StyleSheet.create({
   container: { flex: 1, backgroundColor: c.background },
   header: { paddingHorizontal: spacing.xl, paddingBottom: spacing.md },
   headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  gearBtn: { padding: 4 },
+  headerActions: { flexDirection: "row", alignItems: "center", gap: 8 },
+  headerBtn: { padding: 4 },
   headerTitle: { fontFamily: fonts.bold, fontSize: 28, color: c.text },
   headerSubtitle: {
     fontFamily: fonts.regular,
