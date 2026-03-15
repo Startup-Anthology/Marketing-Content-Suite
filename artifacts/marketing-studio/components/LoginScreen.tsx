@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -66,7 +67,7 @@ export default function LoginScreen() {
       >
         <View style={styles.header}>
           <View style={styles.iconWrap}>
-            <MaterialCommunityIcons name="book-open-variant" size={40} color={c.tint} />
+            <Image source={require("@/assets/sa-icon-white.png")} style={styles.logoImg} resizeMode="contain" />
           </View>
           <Text style={styles.appName}>Marketing Studio</Text>
           <Text style={styles.tagline}>Build. Ship. Grow. Repeat.</Text>
@@ -182,6 +183,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: spacing.lg,
   },
+  logoImg: { width: 48, height: 48 },
   appName: {
     fontFamily: fonts.bold,
     fontSize: 28,
