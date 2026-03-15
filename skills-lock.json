@@ -36,6 +36,11 @@
       "sourceType": "github",
       "computedHash": "063a0e6448123cd359ad0044cc46b0e490cc7964d45ef4bb9fd842bd2ffbca67"
     },
+    "gitlab-ci-patterns": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "computedHash": "3491c468d0bf90ddf274a41a0a62539f6ce17cbcce0d5a9f268f24065f565d72"
+    },
     "pdf": {
       "source": "anthropics/skills",
       "sourceType": "github",
