@@ -1,19 +1,38 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const AUTH_TOKEN_KEY = "auth_token";
+
 const getBaseUrl = () => {
   const domain = process.env.EXPO_PUBLIC_DOMAIN;
   if (domain) return `https://${domain}/api`;
   return "/api";
 };
 
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+  if (token) {
+    return { Authorization: `Bearer ${token}` };
+  }
+  return {};
+}
+
 async function apiFetch(path: string, options?: RequestInit) {
+  const authHeaders = await getAuthHeaders();
   const res = await fetch(`${getBaseUrl()}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
+      ...authHeaders,
       ...options?.headers,
     },
   });
   if (!res.ok) {
-    throw new Error(`API error: ${res.status}`);
+    let errorMessage = `API error: ${res.status}`;
+    try {
+      const errorData = await res.json();
+      if (errorData.error) errorMessage = errorData.error;
+    } catch {}
+    throw new Error(errorMessage);
   }
   if (res.status === 204) return null;
   return res.json();
@@ -261,4 +280,53 @@ export async function fetchGoogleCalendarAuthUrl() {
 
 export async function disconnectGoogleCalendar() {
   return apiFetch("/google-calendar/disconnect", { method: "POST" });
+}
+
+export async function updateProfile(data: {
+  displayName?: string;
+  email?: string;
+  avatarUrl?: string;
+  preferences?: string;
+}) {
+  return apiFetch("/auth/profile", {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function fetchSocialAccounts() {
+  return apiFetch("/social-accounts");
+}
+
+export async function addSocialAccount(data: {
+  platform: string;
+  username: string;
+  profileUrl: string;
+}) {
+  return apiFetch("/social-accounts", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateSocialAccount(id: number, data: Record<string, unknown>) {
+  return apiFetch(`/social-accounts/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteSocialAccount(id: number) {
+  return apiFetch(`/social-accounts/${id}`, { method: "DELETE" });
+}
+
+export async function fetchAdminUsers() {
+  return apiFetch("/admin/users");
+}
+
+export async function updateAdminUser(id: number, data: { role?: string; isActive?: boolean }) {
+  return apiFetch(`/admin/users/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
 }

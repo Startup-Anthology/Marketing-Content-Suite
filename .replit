@@ -28,3 +28,8 @@ timeoutMs = 20000
 [nix]
 channel = "stable-25_05"
 packages = ["freetype", "glibcLocales", "libreoffice", "poppler-utils"]
+
+[userenv]
+
+[userenv.shared]
+JWT_SECRET = "bd5ccf37f94b188ab42f212d3d288319c03028a36bfb6f2424c9cfae1c83167f1cc818e31bf048ab4f2ee4cb6a43be73"

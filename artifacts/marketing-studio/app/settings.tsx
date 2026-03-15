@@ -1,6 +1,7 @@
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
 import type { ComponentProps } from "react";
 import React, { useState, useEffect } from "react";
 import {
@@ -20,19 +21,27 @@ import {
 import BrandGuideViewer from "@/components/BrandGuideViewer";
 import Colors from "@/constants/colors";
 import { fonts, spacing, radius } from "@/constants/theme";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   fetchBrandGuide,
   saveBrandGuide,
   fetchGoogleCalendarStatus,
   fetchGoogleCalendarAuthUrl,
   disconnectGoogleCalendar,
+  fetchSocialAccounts,
+  addSocialAccount,
+  updateSocialAccount,
+  deleteSocialAccount,
+  updateProfile,
+  fetchAdminUsers,
+  updateAdminUser,
 } from "@/lib/api";
 
 const c = Colors.light;
 
 type MCIName = ComponentProps<typeof MaterialCommunityIcons>["name"];
 
-type SectionKey = "about" | "brand" | "integrations" | "help";
+type SectionKey = "about" | "brand" | "integrations" | "profile" | "admin" | "help";
 
 const BRAND_COLORS_DEFAULT = [
   { name: "SA Gold", hex: "#BB935B" },
@@ -41,13 +50,13 @@ const BRAND_COLORS_DEFAULT = [
   { name: "Gray", hex: "#64748B" },
 ];
 
-const SUPPORTED_PLATFORMS: { name: string; icon: MCIName }[] = [
-  { name: "LinkedIn", icon: "linkedin" },
-  { name: "X / Twitter", icon: "twitter" },
-  { name: "Instagram", icon: "instagram" },
-  { name: "Email", icon: "email-outline" },
-  { name: "TikTok", icon: "music-note" },
-  { name: "YouTube", icon: "youtube" },
+const SUPPORTED_PLATFORMS: { name: string; icon: MCIName; key: string }[] = [
+  { name: "LinkedIn", icon: "linkedin", key: "LinkedIn" },
+  { name: "X / Twitter", icon: "twitter", key: "X/Twitter" },
+  { name: "Instagram", icon: "instagram", key: "Instagram" },
+  { name: "Email", icon: "email-outline", key: "Email" },
+  { name: "TikTok", icon: "music-note", key: "TikTok" },
+  { name: "YouTube", icon: "youtube", key: "YouTube" },
 ];
 
 interface ColorEntry { name: string; hex: string; }
@@ -87,8 +96,28 @@ const FEATURE_SECTIONS = [
   { icon: "calendar" as const, title: "Schedule", description: "Plan and schedule posts across all major platforms with a date-based content calendar." },
 ];
 
+interface SocialAccountData {
+  id: number;
+  platform: string;
+  username: string;
+  profileUrl: string;
+  isConnected: boolean;
+}
+
+interface AdminUser {
+  id: number;
+  email: string;
+  displayName: string;
+  avatarUrl: string;
+  role: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
 export default function SettingsScreen() {
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const { user, logout, updateUser } = useAuth();
   const [activeSection, setActiveSection] = useState<SectionKey>("about");
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [helpSearch, setHelpSearch] = useState("");
@@ -104,9 +133,42 @@ export default function SettingsScreen() {
   const [fontEntries, setFontEntries] = useState<FontEntry[]>(DEFAULT_FONTS);
   const [hasChanges, setHasChanges] = useState(false);
 
+  const [profileName, setProfileName] = useState(user?.displayName || "");
+  const [profileEmail, setProfileEmail] = useState(user?.email || "");
+  const [profileHasChanges, setProfileHasChanges] = useState(false);
+  const [notifContent, setNotifContent] = useState(true);
+  const [notifSchedule, setNotifSchedule] = useState(true);
+
+  const [addingPlatform, setAddingPlatform] = useState<string | null>(null);
+  const [newUsername, setNewUsername] = useState("");
+  const [newProfileUrl, setNewProfileUrl] = useState("");
+
+  useEffect(() => {
+    if (user) {
+      setProfileName(user.displayName || "");
+      setProfileEmail(user.email || "");
+      try {
+        const prefs = JSON.parse(user.preferences || "{}");
+        setNotifContent(prefs.notifContent !== false);
+        setNotifSchedule(prefs.notifSchedule !== false);
+      } catch {}
+    }
+  }, [user]);
+
   const { data: guide, isLoading } = useQuery({
     queryKey: ["brand-guide"],
     queryFn: fetchBrandGuide,
+  });
+
+  const { data: socialAccounts = [], refetch: refetchSocial } = useQuery({
+    queryKey: ["social-accounts"],
+    queryFn: fetchSocialAccounts,
+  });
+
+  const { data: adminUsers = [], refetch: refetchAdminUsers } = useQuery({
+    queryKey: ["admin-users"],
+    queryFn: fetchAdminUsers,
+    enabled: user?.role === "admin",
   });
 
   useEffect(() => {
@@ -147,6 +209,49 @@ export default function SettingsScreen() {
     },
     onError: () => {
       Alert.alert("Error", "Could not save brand guide. Please try again.");
+    },
+  });
+
+  const profileMutation = useMutation({
+    mutationFn: () =>
+      updateProfile({
+        displayName: profileName,
+        email: profileEmail,
+        preferences: JSON.stringify({ notifContent, notifSchedule }),
+      }),
+    onSuccess: (data: { id: number; email: string; displayName: string; avatarUrl: string; role: string; preferences: string }) => {
+      updateUser(data);
+      setProfileHasChanges(false);
+      Alert.alert("Saved", "Profile updated.");
+    },
+    onError: () => {
+      Alert.alert("Error", "Could not update profile.");
+    },
+  });
+
+  const addSocialMutation = useMutation({
+    mutationFn: (data: { platform: string; username: string; profileUrl: string }) => addSocialAccount(data),
+    onSuccess: () => {
+      refetchSocial();
+      setAddingPlatform(null);
+      setNewUsername("");
+      setNewProfileUrl("");
+    },
+    onError: () => {
+      Alert.alert("Error", "Could not save social account.");
+    },
+  });
+
+  const deleteSocialMutation = useMutation({
+    mutationFn: (id: number) => deleteSocialAccount(id),
+    onSuccess: () => refetchSocial(),
+  });
+
+  const adminUpdateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: { role?: string; isActive?: boolean } }) => updateAdminUser(id, data),
+    onSuccess: () => refetchAdminUsers(),
+    onError: () => {
+      Alert.alert("Error", "Could not update user.");
     },
   });
 
@@ -203,6 +308,21 @@ export default function SettingsScreen() {
     : FEATURE_SECTIONS;
   const faqCategories = [...new Set(filteredFaq.map((f) => f.category))];
 
+  const socialAccountsMap: Record<string, SocialAccountData> = {};
+  (socialAccounts as SocialAccountData[]).forEach((acc) => {
+    socialAccountsMap[acc.platform] = acc;
+  });
+
+  const handlePlatformPress = (platform: { name: string; key: string }) => {
+    const account = socialAccountsMap[platform.key];
+    if (account && account.isConnected && account.profileUrl) {
+      Linking.openURL(account.profileUrl);
+    } else {
+      setActiveSection("profile");
+      setAddingPlatform(platform.key);
+    }
+  };
+
   const renderAboutSection = () => (
     <>
       <View style={styles.brandCard}>
@@ -245,13 +365,25 @@ export default function SettingsScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Supported Platforms</Text>
         <View style={styles.platformGrid}>
-          {SUPPORTED_PLATFORMS.map((p) => (
-            <View key={p.name} style={styles.platformItem}>
-              <MaterialCommunityIcons name={p.icon} size={20} color={c.tint} />
-              <Text style={styles.platformName}>{p.name}</Text>
-            </View>
-          ))}
+          {SUPPORTED_PLATFORMS.map((p) => {
+            const account = socialAccountsMap[p.key];
+            const isConnected = account?.isConnected;
+            return (
+              <Pressable
+                key={p.name}
+                style={[styles.platformItem, isConnected && styles.platformItemConnected]}
+                onPress={() => handlePlatformPress(p)}
+              >
+                <MaterialCommunityIcons name={p.icon} size={20} color={isConnected ? c.success : c.tint} />
+                <Text style={styles.platformName}>{p.name}</Text>
+                {isConnected && (
+                  <Feather name="check-circle" size={14} color={c.success} />
+                )}
+              </Pressable>
+            );
+          })}
         </View>
+        <Text style={styles.platformHint}>Tap a platform to view your profile or connect an account</Text>
       </View>
     </>
   );
@@ -513,6 +645,288 @@ export default function SettingsScreen() {
     </>
   );
 
+  const renderProfileSection = () => (
+    <>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>User Profile</Text>
+
+        <View style={styles.profileHeader}>
+          <View style={styles.avatarWrap}>
+            {user?.avatarUrl ? (
+              <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />
+            ) : (
+              <View style={styles.avatarPlaceholder}>
+                <Text style={styles.avatarInitial}>
+                  {(user?.displayName || user?.email || "U").charAt(0).toUpperCase()}
+                </Text>
+              </View>
+            )}
+          </View>
+          <View style={styles.profileInfo}>
+            <Text style={styles.profileDisplayName}>{user?.displayName || "No name set"}</Text>
+            <Text style={styles.profileEmail}>{user?.email}</Text>
+            <View style={styles.roleBadge}>
+              <Text style={styles.roleBadgeText}>{user?.role}</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.fieldGroup}>
+          <Text style={styles.label}>Display Name</Text>
+          <TextInput
+            style={styles.input}
+            value={profileName}
+            onChangeText={(v) => { setProfileName(v); setProfileHasChanges(true); }}
+            placeholder="Your display name"
+            placeholderTextColor={c.textMuted}
+          />
+        </View>
+
+        <View style={styles.fieldGroup}>
+          <Text style={styles.label}>Email</Text>
+          <TextInput
+            style={styles.input}
+            value={profileEmail}
+            onChangeText={(v) => { setProfileEmail(v); setProfileHasChanges(true); }}
+            placeholder="your@email.com"
+            placeholderTextColor={c.textMuted}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+        </View>
+
+        <View style={styles.fieldGroup}>
+          <Text style={styles.label}>Notifications</Text>
+          <Pressable
+            style={styles.toggleRow}
+            onPress={() => { setNotifContent(!notifContent); setProfileHasChanges(true); }}
+          >
+            <Text style={styles.toggleLabel}>Content updates</Text>
+            <View style={[styles.toggle, notifContent && styles.toggleActive]}>
+              <View style={[styles.toggleDot, notifContent && styles.toggleDotActive]} />
+            </View>
+          </Pressable>
+          <Pressable
+            style={styles.toggleRow}
+            onPress={() => { setNotifSchedule(!notifSchedule); setProfileHasChanges(true); }}
+          >
+            <Text style={styles.toggleLabel}>Schedule reminders</Text>
+            <View style={[styles.toggle, notifSchedule && styles.toggleActive]}>
+              <View style={[styles.toggleDot, notifSchedule && styles.toggleDotActive]} />
+            </View>
+          </Pressable>
+        </View>
+
+        <Pressable
+          style={[styles.saveBtn, { marginHorizontal: 0 }, (!profileHasChanges || profileMutation.isPending) && styles.saveBtnDisabled]}
+          onPress={() => profileMutation.mutate()}
+          disabled={!profileHasChanges || profileMutation.isPending}
+        >
+          {profileMutation.isPending ? (
+            <ActivityIndicator size="small" color="#FFF" />
+          ) : (
+            <>
+              <Feather name="save" size={18} color="#FFF" />
+              <Text style={styles.saveBtnText}>Save Profile</Text>
+            </>
+          )}
+        </Pressable>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Social Accounts</Text>
+        <Text style={styles.sectionHint}>Connect your social media accounts to track and manage them from one place.</Text>
+
+        {SUPPORTED_PLATFORMS.map((p) => {
+          const account = socialAccountsMap[p.key];
+          const isAdding = addingPlatform === p.key;
+
+          return (
+            <View key={p.key} style={styles.socialAccountCard}>
+              <View style={styles.socialAccountHeader}>
+                <View style={styles.socialAccountLeft}>
+                  <MaterialCommunityIcons name={p.icon} size={22} color={account?.isConnected ? c.success : c.tint} />
+                  <Text style={styles.socialAccountName}>{p.name}</Text>
+                </View>
+                {account?.isConnected ? (
+                  <View style={styles.socialAccountRight}>
+                    <View style={styles.connectedBadge}>
+                      <Feather name="check" size={10} color={c.success} />
+                      <Text style={styles.connectedText}>Connected</Text>
+                    </View>
+                    <Pressable
+                      style={styles.disconnectBtn}
+                      onPress={() => {
+                        Alert.alert("Disconnect", `Remove ${p.name} account?`, [
+                          { text: "Cancel" },
+                          { text: "Remove", style: "destructive", onPress: () => deleteSocialMutation.mutate(account.id) },
+                        ]);
+                      }}
+                    >
+                      <Feather name="x" size={14} color={c.error} />
+                    </Pressable>
+                  </View>
+                ) : (
+                  <Pressable
+                    style={styles.connectBtn}
+                    onPress={() => setAddingPlatform(isAdding ? null : p.key)}
+                  >
+                    <Text style={styles.connectBtnText}>{isAdding ? "Cancel" : "Connect"}</Text>
+                  </Pressable>
+                )}
+              </View>
+
+              {account?.isConnected && (
+                <View style={styles.socialAccountDetails}>
+                  <Text style={styles.socialAccountUsername}>@{account.username}</Text>
+                  {account.profileUrl ? (
+                    <Pressable onPress={() => Linking.openURL(account.profileUrl)}>
+                      <Text style={styles.socialAccountUrl} numberOfLines={1}>{account.profileUrl}</Text>
+                    </Pressable>
+                  ) : null}
+                </View>
+              )}
+
+              {isAdding && !account?.isConnected && (
+                <View style={styles.socialAccountForm}>
+                  <TextInput
+                    style={styles.input}
+                    value={newUsername}
+                    onChangeText={setNewUsername}
+                    placeholder="Username / handle"
+                    placeholderTextColor={c.textMuted}
+                    autoCapitalize="none"
+                  />
+                  <TextInput
+                    style={[styles.input, { marginTop: spacing.sm }]}
+                    value={newProfileUrl}
+                    onChangeText={setNewProfileUrl}
+                    placeholder="Profile URL (e.g. https://linkedin.com/in/...)"
+                    placeholderTextColor={c.textMuted}
+                    autoCapitalize="none"
+                    keyboardType="url"
+                  />
+                  <Pressable
+                    style={[styles.saveSmallBtn, addSocialMutation.isPending && styles.saveBtnDisabled]}
+                    onPress={() => addSocialMutation.mutate({ platform: p.key, username: newUsername, profileUrl: newProfileUrl })}
+                    disabled={addSocialMutation.isPending}
+                  >
+                    {addSocialMutation.isPending ? (
+                      <ActivityIndicator size="small" color="#FFF" />
+                    ) : (
+                      <Text style={styles.saveSmallBtnText}>Save Account</Text>
+                    )}
+                  </Pressable>
+                </View>
+              )}
+            </View>
+          );
+        })}
+      </View>
+
+      <Pressable style={styles.logoutBtn} onPress={() => {
+        const doLogout = async () => {
+          await logout();
+          router.replace("/login");
+        };
+        if (Platform.OS === "web") {
+          const confirmed = window.confirm("Are you sure you want to sign out?");
+          if (confirmed) doLogout();
+        } else {
+          Alert.alert("Sign Out", "Are you sure you want to sign out?", [
+            { text: "Cancel" },
+            { text: "Sign Out", style: "destructive", onPress: doLogout },
+          ]);
+        }
+      }}>
+        <Feather name="log-out" size={16} color={c.error} />
+        <Text style={styles.logoutBtnText}>Sign Out</Text>
+      </Pressable>
+    </>
+  );
+
+  const renderAdminSection = () => (
+    <>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>User Management</Text>
+        <Text style={styles.sectionHint}>Manage registered users, assign roles, and control account access.</Text>
+
+        {(adminUsers as AdminUser[]).map((u) => (
+          <View key={u.id} style={[styles.adminUserCard, !u.isActive && styles.adminUserInactive]}>
+            <View style={styles.adminUserHeader}>
+              <View style={styles.adminUserLeft}>
+                <View style={styles.adminAvatarSmall}>
+                  <Text style={styles.adminAvatarText}>
+                    {(u.displayName || u.email).charAt(0).toUpperCase()}
+                  </Text>
+                </View>
+                <View>
+                  <Text style={styles.adminUserName}>{u.displayName || "No name"}</Text>
+                  <Text style={styles.adminUserEmail}>{u.email}</Text>
+                </View>
+              </View>
+              {!u.isActive && (
+                <View style={styles.inactiveBadge}>
+                  <Text style={styles.inactiveBadgeText}>Inactive</Text>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.adminUserActions}>
+              <Text style={styles.adminRoleLabel}>Role:</Text>
+              {["admin", "editor", "viewer"].map((role) => (
+                <Pressable
+                  key={role}
+                  style={[styles.roleChip, u.role === role && styles.roleChipActive]}
+                  onPress={() => {
+                    if (u.id === user?.id && role !== "admin") return;
+                    adminUpdateMutation.mutate({ id: u.id, data: { role } });
+                  }}
+                >
+                  <Text style={[styles.roleChipText, u.role === role && styles.roleChipTextActive]}>
+                    {role.charAt(0).toUpperCase() + role.slice(1)}
+                  </Text>
+                </Pressable>
+              ))}
+
+              {u.id !== user?.id && (
+                <Pressable
+                  style={styles.toggleActiveBtn}
+                  onPress={() => {
+                    Alert.alert(
+                      u.isActive ? "Deactivate User" : "Reactivate User",
+                      `${u.isActive ? "Deactivate" : "Reactivate"} ${u.email}?`,
+                      [
+                        { text: "Cancel" },
+                        {
+                          text: u.isActive ? "Deactivate" : "Reactivate",
+                          style: u.isActive ? "destructive" : "default",
+                          onPress: () => adminUpdateMutation.mutate({ id: u.id, data: { isActive: !u.isActive } }),
+                        },
+                      ]
+                    );
+                  }}
+                >
+                  <Feather name={u.isActive ? "user-x" : "user-check"} size={14} color={u.isActive ? c.error : c.success} />
+                  <Text style={[styles.toggleActiveBtnText, { color: u.isActive ? c.error : c.success }]}>
+                    {u.isActive ? "Deactivate" : "Reactivate"}
+                  </Text>
+                </Pressable>
+              )}
+            </View>
+          </View>
+        ))}
+
+        {(adminUsers as AdminUser[]).length === 0 && (
+          <View style={styles.emptyState}>
+            <Feather name="users" size={40} color={c.textMuted} />
+            <Text style={styles.emptyText}>No users found</Text>
+          </View>
+        )}
+      </View>
+    </>
+  );
+
   const renderHelpSection = () => (
     <>
       <Pressable style={styles.brandGuideCard} onPress={() => setBrandGuideVisible(true)}>
@@ -603,6 +1017,8 @@ export default function SettingsScreen() {
     { key: "about", label: "About", icon: "info" },
     { key: "brand", label: "Brand", icon: "bookmark" },
     { key: "integrations", label: "Sync", icon: "link" },
+    { key: "profile", label: "Profile", icon: "user" },
+    ...(user?.role === "admin" ? [{ key: "admin" as SectionKey, label: "Admin", icon: "shield" }] : []),
     { key: "help", label: "Help", icon: "help-circle" },
   ];
 
@@ -630,6 +1046,8 @@ export default function SettingsScreen() {
       {activeSection === "about" && renderAboutSection()}
       {activeSection === "brand" && renderBrandSection()}
       {activeSection === "integrations" && renderIntegrationsSection()}
+      {activeSection === "profile" && renderProfileSection()}
+      {activeSection === "admin" && user?.role === "admin" && renderAdminSection()}
       {activeSection === "help" && renderHelpSection()}
 
       <BrandGuideViewer
@@ -663,7 +1081,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
   },
   switcherItemActive: { backgroundColor: c.tint },
-  switcherText: { fontFamily: fonts.medium, fontSize: 12, color: c.textSecondary },
+  switcherText: { fontFamily: fonts.medium, fontSize: 11, color: c.textSecondary },
   switcherTextActive: { color: c.background, fontFamily: fonts.semibold },
   brandCard: {
     marginHorizontal: spacing.xl,
@@ -702,7 +1120,12 @@ const styles = StyleSheet.create({
     backgroundColor: c.surface, paddingHorizontal: spacing.md, paddingVertical: spacing.sm,
     borderRadius: radius.md, borderWidth: 1, borderColor: c.border,
   },
+  platformItemConnected: {
+    borderColor: c.success + "40",
+    backgroundColor: c.success + "10",
+  },
   platformName: { fontFamily: fonts.medium, fontSize: 13, color: c.text },
+  platformHint: { fontFamily: fonts.regular, fontSize: 11, color: c.textMuted, marginTop: spacing.sm },
   fieldGroup: { marginBottom: spacing.lg },
   label: { fontFamily: fonts.medium, fontSize: 14, color: c.text, marginBottom: 2 },
   hint: { fontFamily: fonts.regular, fontSize: 11, color: c.textMuted, marginBottom: spacing.sm, lineHeight: 15 },
@@ -870,4 +1293,115 @@ const styles = StyleSheet.create({
     flex: 1,
     lineHeight: 17,
   },
+  profileHeader: {
+    flexDirection: "row", alignItems: "center", gap: spacing.lg,
+    marginBottom: spacing.xxl,
+  },
+  avatarWrap: {},
+  avatar: { width: 64, height: 64, borderRadius: 32 },
+  avatarPlaceholder: {
+    width: 64, height: 64, borderRadius: 32,
+    backgroundColor: c.tint + "20", alignItems: "center", justifyContent: "center",
+  },
+  avatarInitial: { fontFamily: fonts.bold, fontSize: 24, color: c.tint },
+  profileInfo: { flex: 1 },
+  profileDisplayName: { fontFamily: fonts.semibold, fontSize: 18, color: c.text },
+  profileEmail: { fontFamily: fonts.regular, fontSize: 13, color: c.textSecondary, marginTop: 2 },
+  roleBadge: {
+    alignSelf: "flex-start",
+    backgroundColor: c.tint + "20", borderRadius: radius.sm,
+    paddingHorizontal: spacing.sm, paddingVertical: 2, marginTop: spacing.xs,
+  },
+  roleBadgeText: { fontFamily: fonts.medium, fontSize: 11, color: c.tint, textTransform: "capitalize" },
+
+  toggleRow: {
+    flexDirection: "row", justifyContent: "space-between", alignItems: "center",
+    paddingVertical: spacing.md, borderBottomWidth: 1, borderBottomColor: c.border,
+  },
+  toggleLabel: { fontFamily: fonts.regular, fontSize: 14, color: c.text },
+  toggle: {
+    width: 44, height: 24, borderRadius: 12,
+    backgroundColor: c.surfaceHigh, justifyContent: "center", paddingHorizontal: 2,
+  },
+  toggleActive: { backgroundColor: c.tint },
+  toggleDot: {
+    width: 20, height: 20, borderRadius: 10, backgroundColor: c.textMuted,
+  },
+  toggleDotActive: { backgroundColor: "#FFF", alignSelf: "flex-end" },
+
+  socialAccountCard: {
+    backgroundColor: c.surface, borderRadius: radius.md,
+    padding: spacing.lg, marginBottom: spacing.sm, borderWidth: 1, borderColor: c.border,
+  },
+  socialAccountHeader: {
+    flexDirection: "row", justifyContent: "space-between", alignItems: "center",
+  },
+  socialAccountLeft: { flexDirection: "row", alignItems: "center", gap: spacing.md },
+  socialAccountName: { fontFamily: fonts.medium, fontSize: 14, color: c.text },
+  socialAccountRight: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
+  connectedBadge: {
+    flexDirection: "row", alignItems: "center", gap: 3,
+    backgroundColor: c.success + "15", paddingHorizontal: spacing.sm, paddingVertical: 3,
+    borderRadius: radius.sm,
+  },
+  connectedText: { fontFamily: fonts.medium, fontSize: 11, color: c.success },
+  socialAccountDetails: {
+    marginTop: spacing.sm, paddingTop: spacing.sm,
+    borderTopWidth: 1, borderTopColor: c.border,
+  },
+  socialAccountUsername: { fontFamily: fonts.medium, fontSize: 13, color: c.textSecondary },
+  socialAccountUrl: { fontFamily: fonts.regular, fontSize: 12, color: c.tint, marginTop: 2 },
+  socialAccountForm: { marginTop: spacing.md },
+  saveSmallBtn: {
+    backgroundColor: c.tint, paddingVertical: spacing.sm + 2,
+    borderRadius: radius.md, alignItems: "center", marginTop: spacing.md,
+  },
+  saveSmallBtnText: { fontFamily: fonts.semibold, fontSize: 13, color: "#FFF" },
+
+  logoutBtn: {
+    flexDirection: "row", alignItems: "center", justifyContent: "center",
+    gap: spacing.sm, marginHorizontal: spacing.xl, paddingVertical: spacing.lg,
+    borderRadius: radius.md, borderWidth: 1, borderColor: c.error + "30",
+    marginBottom: spacing.xxl,
+  },
+  logoutBtnText: { fontFamily: fonts.medium, fontSize: 14, color: c.error },
+
+  adminUserCard: {
+    backgroundColor: c.surface, borderRadius: radius.md,
+    padding: spacing.lg, marginBottom: spacing.sm, borderWidth: 1, borderColor: c.border,
+  },
+  adminUserInactive: { opacity: 0.6 },
+  adminUserHeader: {
+    flexDirection: "row", justifyContent: "space-between", alignItems: "center",
+    marginBottom: spacing.md,
+  },
+  adminUserLeft: { flexDirection: "row", alignItems: "center", gap: spacing.md },
+  adminAvatarSmall: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: c.tint + "20", alignItems: "center", justifyContent: "center",
+  },
+  adminAvatarText: { fontFamily: fonts.semibold, fontSize: 14, color: c.tint },
+  adminUserName: { fontFamily: fonts.medium, fontSize: 14, color: c.text },
+  adminUserEmail: { fontFamily: fonts.regular, fontSize: 12, color: c.textSecondary },
+  inactiveBadge: {
+    backgroundColor: c.error + "15", paddingHorizontal: spacing.sm, paddingVertical: 2,
+    borderRadius: radius.sm,
+  },
+  inactiveBadgeText: { fontFamily: fonts.medium, fontSize: 11, color: c.error },
+  adminUserActions: {
+    flexDirection: "row", alignItems: "center", gap: spacing.sm, flexWrap: "wrap",
+  },
+  adminRoleLabel: { fontFamily: fonts.medium, fontSize: 12, color: c.textSecondary },
+  roleChip: {
+    paddingHorizontal: spacing.md, paddingVertical: spacing.xs,
+    borderRadius: radius.sm, borderWidth: 1, borderColor: c.border,
+  },
+  roleChipActive: { backgroundColor: c.tint, borderColor: c.tint },
+  roleChipText: { fontFamily: fonts.medium, fontSize: 12, color: c.textSecondary },
+  roleChipTextActive: { color: "#FFF" },
+  toggleActiveBtn: {
+    flexDirection: "row", alignItems: "center", gap: 4,
+    marginLeft: "auto",
+  },
+  toggleActiveBtnText: { fontFamily: fonts.medium, fontSize: 12 },
 });

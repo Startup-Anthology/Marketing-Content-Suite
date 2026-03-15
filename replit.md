@@ -122,14 +122,20 @@ Expo React Native mobile app — Marketing Content Studio for Startup Anthology 
   - Edit scheduled posts: tapping a post opens edit mode with pre-filled fields; delete with confirmation
   - Swipe-to-delete on schedule post cards
   - Google Calendar integration: connect/disconnect via Settings, auto-sync post CRUD to calendar events
-  - Settings modal with 4 sub-sections: About, Brand Guide, Sync (Google Calendar), Help
+  - Login/Signup screen gates unauthenticated access
+  - Settings modal with 6 sub-sections: About, Brand Guide, Profile, Sync (Google Calendar), Admin (admin only), Help
     - Brand Guide — define brand identity (name, voice, tone, colors, fonts, logo, story); auto-injected into AI prompts
     - Help — searchable FAQ, feature summaries
     - About — brand palette, version info, supported platforms
   - Podcast Generator: AI-powered episode script generation (solo, duo, interview, debate, narrative formats) with structured output (cold open, setup, segments, takeaways, outro), speaker tag rendering, per-section copy, and draft saving
   - Interview Prep: AI-powered interview preparation (guest brief, 15-20 structured questions by segment, follow-up suggestions, run-of-show timeline), with tabbed output view, export/share, and draft saving
 - **API**: Uses `lib/api.ts` helper to call `@workspace/api-server` endpoints
-- **DB Tables**: content_pieces, storyboards, research_notes, scheduled_posts (with google_calendar_event_id), brand_guide, podcast_scripts, interview_preps
+- **DB Tables**: users, social_accounts, content_pieces, storyboards, research_notes, scheduled_posts (with google_calendar_event_id), brand_guide, podcast_scripts, interview_preps
+- **Authentication**: JWT-based auth with bcryptjs password hashing; first user auto-assigned admin role; session persistence via AsyncStorage; requires `JWT_SECRET` env var
+- **Auth Routes**: POST /api/auth/signup, POST /api/auth/login, POST /api/auth/logout, GET /api/auth/me, PUT /api/auth/profile
+- **Social Accounts API**: GET/POST/PUT/DELETE /api/social-accounts — per-user platform credentials (LinkedIn, X/Twitter, Instagram, Email, TikTok, YouTube)
+- **Admin API**: GET /api/admin/users, PUT /api/admin/users/:id — user management, role assignment (admin/editor/viewer), account deactivation
+- **Auth Middleware**: `src/middleware/auth.ts` — authMiddleware, optionalAuthMiddleware, adminMiddleware
 - **AI Routes**: POST /api/ai/generate-draft, POST /api/ai/seo-research, POST /api/ai/podcast-script, POST /api/ai/interview-prep — powered by Claude Sonnet 4.6 (Anthropic) via Replit AI Integrations; all inject brand context from saved brand guide
 - **Brand Guide API**: GET /api/brand-guide, PUT /api/brand-guide — singleton brand identity CRUD
 - **CRUD Routes**: /podcast-scripts, /interview-preps (GET list, POST create, GET/:id, DELETE/:id)

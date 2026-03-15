@@ -6,17 +6,18 @@ import {
   useFonts,
 } from "@expo-google-fonts/inter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Stack } from "expo-router";
+import { Redirect, Stack, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
-import { Platform } from "react-native";
+import { ActivityIndicator, Platform, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Colors from "@/constants/colors";
 
 SplashScreen.preventAutoHideAsync();
@@ -30,6 +31,27 @@ if (Platform.OS === "web" && typeof window !== "undefined" && "serviceWorker" in
 const queryClient = new QueryClient();
 
 function RootLayoutNav() {
+  const { user, isLoading } = useAuth();
+  const segments = useSegments();
+
+  const isOnLoginPage = segments[0] === "login";
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: Colors.light.background, alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator size="large" color={Colors.light.tint} />
+      </View>
+    );
+  }
+
+  if (!user && !isOnLoginPage) {
+    return <Redirect href="/login" />;
+  }
+
+  if (user && isOnLoginPage) {
+    return <Redirect href="/(tabs)" />;
+  }
+
   return (
     <Stack
       screenOptions={{
@@ -39,6 +61,13 @@ function RootLayoutNav() {
         contentStyle: { backgroundColor: Colors.light.background },
       }}
     >
+      <Stack.Screen
+        name="login"
+        options={{
+          headerShown: false,
+          animation: "none",
+        }}
+      />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen
         name="create-content"
@@ -113,12 +142,14 @@ export default function RootLayout() {
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
-            <GestureHandlerRootView>
-              <KeyboardProvider>
-                <StatusBar style="light" />
-                <RootLayoutNav />
-              </KeyboardProvider>
-            </GestureHandlerRootView>
+            <AuthProvider>
+              <GestureHandlerRootView>
+                <KeyboardProvider>
+                  <StatusBar style="light" />
+                  <RootLayoutNav />
+                </KeyboardProvider>
+              </GestureHandlerRootView>
+            </AuthProvider>
           </ThemeProvider>
         </QueryClientProvider>
       </ErrorBoundary>
