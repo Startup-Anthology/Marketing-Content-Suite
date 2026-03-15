@@ -6,19 +6,35 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "marketing-studio",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0F1729"
+      "backgroundColor": "#000000"
     },
     "ios": {
-      "supportsTablet": false
+      "bundleIdentifier": "com.startupanthology.marketingstudio",
+      "buildNumber": "1",
+      "supportsTablet": false,
+      "infoPlist": {
+        "UIStatusBarStyle": "UIStatusBarStyleLightContent",
+        "UIViewControllerBasedStatusBarAppearance": false
+      },
+      "splash": {
+        "backgroundColor": "#000000",
+        "resizeMode": "contain",
+        "image": "./assets/images/splash-icon.png"
+      }
     },
     "android": {},
     "web": {
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "name": "Marketing Content Studio",
+      "shortName": "Studio",
+      "description": "Startup Anthology Marketing Content Studio",
+      "themeColor": "#000000",
+      "backgroundColor": "#000000"
     },
     "plugins": [
       [

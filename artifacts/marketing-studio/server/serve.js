@@ -14,6 +14,7 @@ const fs = require("fs");
 const path = require("path");
 
 const STATIC_ROOT = path.resolve(__dirname, "..", "static-build");
+const PUBLIC_ROOT = path.resolve(__dirname, "..", "public");
 const TEMPLATE_PATH = path.resolve(__dirname, "templates", "landing-page.html");
 const basePath = (process.env.BASE_PATH || "/").replace(/\/+$/, "");
 
@@ -124,6 +125,21 @@ const server = http.createServer((req, res) => {
     if (pathname === "/") {
       return serveLandingPage(req, res, landingPageTemplate, appName);
     }
+  }
+
+  const publicPath = path.normalize(pathname).replace(/^(\.\.(\/|\\|$))+/, "");
+  const publicFilePath = path.join(PUBLIC_ROOT, publicPath);
+  if (
+    publicFilePath.startsWith(PUBLIC_ROOT) &&
+    fs.existsSync(publicFilePath) &&
+    !fs.statSync(publicFilePath).isDirectory()
+  ) {
+    const ext = path.extname(publicFilePath).toLowerCase();
+    const contentType = MIME_TYPES[ext] || "application/octet-stream";
+    const content = fs.readFileSync(publicFilePath);
+    res.writeHead(200, { "content-type": contentType });
+    res.end(content);
+    return;
   }
 
   serveStaticFile(pathname, res);
