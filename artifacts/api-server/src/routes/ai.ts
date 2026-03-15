@@ -24,7 +24,7 @@ function extractJSON(text: string): Record<string, unknown> {
 }
 
 const contentTypeFrameworks: Record<string, string> = {
-  "social-post": `Structure for social posts:
+  social: `Structure for social posts:
 - Hook: Open with a bold statement, question, or surprising stat (first 1-2 lines are critical for stopping the scroll)
 - Value: Deliver a clear insight, tip, or story in 2-4 concise lines
 - CTA: End with a question, invitation, or call-to-action that drives engagement
@@ -43,7 +43,7 @@ const contentTypeFrameworks: Record<string, string> = {
 - Body: Tell a micro-story or deliver a quick framework (3-5 points max)
 - Hashtags: 5-15 relevant hashtags mixing broad reach and niche targeting
 - CTA: Ask a specific question or prompt a save/share action`,
-  "blog-post": `Structure for blog posts (case study / thought leadership framework):
+  blog: `Structure for blog posts (case study / thought leadership framework):
 - Headline: Benefit-driven, specific, uses power words — aim for 60-70 characters for SEO
 - Meta description: 150-160 characters summarizing the value proposition
 - Opening: Start with a relatable problem, surprising statistic, or bold assertion
@@ -59,7 +59,7 @@ router.post("/ai/generate-draft", async (req, res) => {
   const { type, platform, topic, tone, additionalContext } = req.body;
 
   const brandContext = await getBrandContextBlock();
-  const framework = contentTypeFrameworks[type] || contentTypeFrameworks["social-post"];
+  const framework = contentTypeFrameworks[type] || contentTypeFrameworks["social"];
 
   const systemPrompt = `You are a senior marketing strategist and content creator for startup founders. Generate polished, publish-ready ${type} content optimized for ${platform}.
 
