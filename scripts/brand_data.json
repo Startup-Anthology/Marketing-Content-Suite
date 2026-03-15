@@ -1,0 +1,99 @@
+{
+  "_source_files": [
+    "artifacts/marketing-studio/constants/colors.ts",
+    "artifacts/mockup-sandbox/src/components/mockups/brand-guide/ColorSystem.tsx",
+    "artifacts/mockup-sandbox/src/components/mockups/brand-guide/BrandVoice.tsx",
+    "artifacts/mockup-sandbox/src/components/mockups/brand-guide/AudiencePositioning.tsx",
+    "attached_assets/branding-1773587109253.json"
+  ],
+  "brand": {
+    "name": "Startup Anthology",
+    "tagline": "Every great company starts with a great story.",
+    "positioning": "Championing the operators and doers who don't have time for spreadsheet headaches."
+  },
+  "palette": {
+    "SA Gold": "#BB935B",
+    "Black": "#000000",
+    "White": "#FFFFFF",
+    "Dark Surface": "#111111",
+    "Surface Elevated": "#1A1A1A",
+    "Surface High": "#2A2A2A",
+    "Gold Light": "#D4B07A",
+    "Gold Dark": "#9A7545",
+    "Gray 100": "#F8FAFC",
+    "Gray 200": "#E2E8F0",
+    "Gray 300": "#94A3B8",
+    "Gray 400": "#64748B"
+  },
+  "typography": {
+    "heading": {
+      "family": "League Spartan",
+      "fallback": "Lato, system-ui, sans-serif",
+      "sizes": { "h1": "60px", "h2": "30px" }
+    },
+    "body": {
+      "family": "Hanken Grotesk",
+      "fallback": "system-ui, sans-serif",
+      "sizes": { "body": "12px" }
+    }
+  },
+  "voice": {
+    "attributes": ["Confident", "Approachable", "Expert", "Action-oriented"],
+    "tone_spectrum": {
+      "Formal": 3,
+      "Casual": 7,
+      "Serious": 4,
+      "Enthusiastic": 6,
+      "Technical": 5,
+      "Accessible": 8
+    },
+    "dos": [
+      "Use active voice and direct language",
+      "Speak to the reader as a peer, not a student",
+      "Lead with outcomes and benefits",
+      "Use concrete examples over abstract promises"
+    ],
+    "donts": [
+      "Use jargon without context",
+      "Promise overnight success",
+      "Talk down to the audience",
+      "Use passive or hedge-heavy language"
+    ]
+  },
+  "audience_segments": [
+    { "name": "Startup Employees & Managers", "priority": "Primary", "type": "B2C" },
+    { "name": "Aspiring Entrepreneurs", "priority": "Secondary", "type": "B2C" },
+    { "name": "Freelancers & Contractors", "priority": "Secondary", "type": "B2C" },
+    { "name": "Entrepreneurs & Founders", "priority": "Co-Primary", "type": "B2B" },
+    { "name": "Angel Investors & VCs", "priority": "Secondary", "type": "B2B" },
+    { "name": "Early-Stage Operators", "priority": "Secondary", "type": "Product" }
+  ],
+  "logo": {
+    "variants": [
+      "Badge (Primary)",
+      "Horizontal Badge + Wordmark",
+      "Stacked Badge + Wordmark",
+      "Icon Only"
+    ],
+    "color_modes": ["Icon Only (White)", "Horizontal (Black)", "Horizontal (White)", "Stacked (Black)", "Stacked (White)"],
+    "clear_space": "Minimum clear space equal to 1× the badge icon height on all sides."
+  },
+  "messaging": [
+    {
+      "audience": "For Entrepreneurs & Small Business Owners",
+      "message": "Your job isn't building spreadsheets. Startup Anthology provides the tools and knowledge so you can focus on running your business."
+    },
+    {
+      "audience": "For Pre-Revenue Teams",
+      "message": "Not making money yet? Model your burn rate, runway, and projected growth before your first dollar comes in."
+    },
+    {
+      "audience": "For Real Estate & Contractors",
+      "message": "Track job pipelines, deposits, and material costs with a model built for how you actually work."
+    },
+    {
+      "audience": "For Founders Raising Capital",
+      "message": "Get investor-ready financial statements and KPIs without hiring an analyst."
+    }
+  ]
+}

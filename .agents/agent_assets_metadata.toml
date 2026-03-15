@@ -1,0 +1,14 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "Cb4JkPWp6YnZjJ60LgMrn"
+uri = "file://SA_Brand_Guide.pdf"
+type = "pdf"
+title = "Startup Anthology Brand Guide (PDF Report)"
+
+[[outputs]]
+id = "ub6X2Qs_hIsey-bDm-wjv"
+uri = "file://SA_Brand_Guide.pptx"
+type = "slides"
+title = "Startup Anthology Brand Guide (PPTX Presentation)"

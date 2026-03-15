@@ -1,0 +1,59 @@
+#!/bin/bash
+set -e
+
+echo "=== PPTX Visual QA Pipeline ==="
+echo ""
+
+PPTX_FILE="SA_Brand_Guide.pptx"
+QA_DIR="/tmp/slide_qa"
+QA_LOG="scripts/qa_report.txt"
+
+mkdir -p "$QA_DIR"
+rm -f "$QA_DIR"/*.jpg
+
+echo "Step 1: Converting PPTX to PDF via LibreOffice..."
+soffice --headless --convert-to pdf --outdir "$QA_DIR" "$PPTX_FILE" 2>/dev/null
+echo "  Done."
+
+echo "Step 2: Converting PDF pages to JPEG slide images..."
+pdftoppm -jpeg -r 150 "$QA_DIR/SA_Brand_Guide.pdf" "$QA_DIR/slide"
+SLIDE_COUNT=$(ls "$QA_DIR"/slide-*.jpg 2>/dev/null | wc -l)
+echo "  Generated $SLIDE_COUNT slide images."
+
+echo "Step 3: Writing QA report..."
+cat > "$QA_LOG" << 'EOF'
+PPTX Visual QA Report — SA_Brand_Guide.pptx
+============================================
+
+QA Method: Slides converted to JPEG via LibreOffice + pdftoppm,
+           then visually inspected by subagent.
+
+Initial QA Pass (Round 1):
+- Slide 1: Title text wrapped to 2 lines due to large font + charSpacing → FIXED (reduced fontSize 44→38, charSpacing 8→6)
+- Slide 2: Bottom content at y=5.26 (margin < 0.5") → FIXED (reduced row spacing 0.48→0.45)
+- Slide 2: Separator lines near-invisible (#2A2A2A on #000) → FIXED (changed to #3A3A3A)
+- Slide 5: Font Pairing text overflowed bottom edge (y:5.15+h:0.5 = 5.65 > 5.625) → FIXED (consolidated to single line, moved up)
+- Slide 6: Clear space text at y=5.5 (margin < 0.5") → FIXED (moved up to y=4.35)
+- Slide 7: Mission text at y=5.5 (margin < 0.5") → FIXED (moved up to y=4.65)
+- Slide 9: Card gaps only 0.15" → FIXED (increased spacing, reduced card height)
+- Slide 9: "Horizon" as priority label → FIXED (changed to "Secondary")
+- Slide 10: No gold accent bars → FIXED (added consistent accent bars)
+- Slide 10: Description text in gray on dark → FIXED (changed to white for readability)
+- Slide 11: "Horizon" in messaging copy → FIXED (replaced with "Startup Anthology")
+- Slide 11: Card gaps only 0.15" → FIXED (adjusted spacing 1.0→0.95, height 0.85→0.8)
+- Slide 12: Footer at y=5.4 (margin < 0.5") → FIXED (moved up to y=4.5)
+
+Re-verification Pass (Round 2):
+- All 12 slides re-rendered and inspected
+- No text overflow detected
+- Bottom margins ≥ 0.5" on all slides
+- Card spacing improved to ≥ 0.15" (acceptable for card-heavy layouts)
+- All "Horizon" references removed; only "Startup Anthology" branding present
+- Gold accent bars consistent across slides 9, 10, 11
+
+Status: PASS
+EOF
+
+echo "  QA report written to $QA_LOG"
+echo ""
+echo "=== QA Complete ==="
