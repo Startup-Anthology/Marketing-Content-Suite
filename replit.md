@@ -19,20 +19,25 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 ## Structure
 
 ```text
-artifacts-monorepo/
-├── artifacts/              # Deployable applications
-│   └── api-server/         # Express API server
-├── lib/                    # Shared libraries
-│   ├── api-spec/           # OpenAPI spec + Orval codegen config
-│   ├── api-client-react/   # Generated React Query hooks
-│   ├── api-zod/            # Generated Zod schemas from OpenAPI
-│   └── db/                 # Drizzle ORM schema + DB connection
-├── scripts/                # Utility scripts (single workspace package)
-│   └── src/                # Individual .ts scripts, run via `pnpm --filter @workspace/scripts run <script>`
-├── pnpm-workspace.yaml     # pnpm workspace (artifacts/*, lib/*, lib/integrations/*, scripts)
-├── tsconfig.base.json      # Shared TS options (composite, bundler resolution, es2022)
-├── tsconfig.json           # Root TS project references
-└── package.json            # Root package with hoisted devDeps
+Marketing-Content-Suite/
+├── artifacts/                  # Deployable applications
+│   ├── api-server/             # Express 5 API server (auth, AI, social, scheduling)
+│   ├── marketing-studio/       # Expo React Native mobile app
+│   └── mockup-sandbox/         # Vite UI prototyping sandbox (brand guide boards)
+├── lib/                        # Shared libraries
+│   ├── api-spec/               # OpenAPI spec + Orval codegen config
+│   ├── api-client-react/       # Generated React Query hooks
+│   ├── api-zod/                # Generated Zod schemas from OpenAPI
+│   ├── db/                     # Drizzle ORM schema + DB connection
+│   └── integrations/
+│       └── anthropic-ai/       # Anthropic AI integration (Claude Sonnet)
+├── scripts/                    # Utility scripts (single workspace package)
+│   └── src/                    # Individual .ts scripts, run via `pnpm --filter @workspace/scripts run <script>`
+├── .github/workflows/          # CI/CD pipelines (ci.yml, deploy.yml)
+├── pnpm-workspace.yaml         # pnpm workspace (artifacts/*, lib/*, lib/integrations/*, scripts)
+├── tsconfig.base.json          # Shared TS options (composite, bundler resolution, es2022)
+├── tsconfig.json               # Root TS project references
+└── package.json                # Root package with hoisted devDeps
 ```
 
 ## TypeScript & Composite Projects
@@ -154,6 +159,17 @@ Expo React Native mobile app — Marketing Content Studio for Startup Anthology 
 - **Fonts**: Inter (400/500/600/700)
 - **Port**: 23704 (via $PORT)
 
+### `lib/integrations-anthropic-ai` (`@workspace/integrations-anthropic-ai`)
+
+Anthropic AI integration via Replit AI Integrations proxy. Pre-configured SDK client using `AI_INTEGRATIONS_ANTHROPIC_BASE_URL` and `AI_INTEGRATIONS_ANTHROPIC_API_KEY` env vars. Exports `anthropic` client and batch processing utilities.
+
+- Model: `claude-sonnet-4-6`
+- Max tokens: 8192 (16384 for long-form content like podcast scripts)
+
+### `scripts` (`@workspace/scripts`)
+
+Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
+
 ## GitHub Integration
 
 - **Repository**: `git@github.com:Startup-Anthology/Marketing-Content-Suite.git`
@@ -168,14 +184,3 @@ Expo React Native mobile app — Marketing Content Studio for Startup Anthology 
 - `deployment-pipeline-design` — multi-stage pipeline architecture with approval gates
 - `gitlab-ci-patterns` — GitLab CI/CD templates
 - `github-actions-templates` — GitHub Actions workflow templates tailored to this monorepo
-
-### `lib/integrations-anthropic-ai` (`@workspace/integrations-anthropic-ai`)
-
-Anthropic AI integration via Replit AI Integrations proxy. Pre-configured SDK client using `AI_INTEGRATIONS_ANTHROPIC_BASE_URL` and `AI_INTEGRATIONS_ANTHROPIC_API_KEY` env vars. Exports `anthropic` client and batch processing utilities.
-
-- Model: `claude-sonnet-4-6`
-- Max tokens: 8192 (16384 for long-form content like podcast scripts)
-
-### `scripts` (`@workspace/scripts`)
-
-Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
