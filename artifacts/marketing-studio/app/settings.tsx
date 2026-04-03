@@ -36,6 +36,10 @@ import {
   updateProfile,
   fetchAdminUsers,
   updateAdminUser,
+  fetchUtmLinks,
+  createUtmLink,
+  updateUtmLink,
+  deleteUtmLink,
 } from "@/lib/api";
 
 type MCIName = ComponentProps<typeof MaterialCommunityIcons>["name"];
@@ -113,6 +117,35 @@ interface AdminUser {
   createdAt: string;
 }
 
+interface UtmLinkData {
+  id: number;
+  userId: number;
+  destinationUrl: string;
+  source: string;
+  medium: string;
+  campaign: string;
+  content: string | null;
+  term: string | null;
+  fullUrl: string;
+  shortCode: string | null;
+  shortUrl: string | null;
+  status: string;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const UTM_SOURCES = [
+  "linkedin", "twitter", "instagram", "facebook", "newsletter",
+  "email-sequence", "google", "podcast", "youtube", "tiktok",
+  "partner", "qr-code", "direct-outreach", "blog",
+];
+
+const UTM_MEDIUMS = [
+  "social", "paid-social", "email", "cpc", "paid",
+  "referral", "audio", "video", "organic", "qr",
+];
+
 export default function SettingsScreen() {
   const { colors: c } = useTheme();
   const styles = useMemo(() => createStyles(c), [c]);
@@ -170,6 +203,52 @@ export default function SettingsScreen() {
     queryKey: ["admin-users"],
     queryFn: fetchAdminUsers,
     enabled: user?.role === "admin",
+  });
+
+  const { data: utmLinks = [], refetch: refetchUtmLinks } = useQuery({
+    queryKey: ["utm-links"],
+    queryFn: fetchUtmLinks,
+    enabled: user?.role === "admin" || user?.role === "editor",
+  });
+
+  // UTM form state
+  const [utmDestination, setUtmDestination] = useState("");
+  const [utmSource, setUtmSource] = useState("");
+  const [utmMedium, setUtmMedium] = useState("");
+  const [utmCampaign, setUtmCampaign] = useState("");
+  const [utmContent, setUtmContent] = useState("");
+  const [utmTerm, setUtmTerm] = useState("");
+  const [utmNotes, setUtmNotes] = useState("");
+  const [utmShowForm, setUtmShowForm] = useState(false);
+  const [utmStatusFilter, setUtmStatusFilter] = useState<string>("all");
+  const [utmShowGuide, setUtmShowGuide] = useState(false);
+  const [utmEditingId, setUtmEditingId] = useState<number | null>(null);
+
+  const utmCreateMutation = useMutation({
+    mutationFn: (data: { destinationUrl: string; source: string; medium: string; campaign: string; content?: string; term?: string; notes?: string }) =>
+      utmEditingId ? updateUtmLink(utmEditingId, data) : createUtmLink(data),
+    onSuccess: () => {
+      refetchUtmLinks();
+      setUtmDestination("");
+      setUtmSource("");
+      setUtmMedium("");
+      setUtmCampaign("");
+      setUtmContent("");
+      setUtmTerm("");
+      setUtmNotes("");
+      setUtmShowForm(false);
+      setUtmEditingId(null);
+    },
+  });
+
+  const utmDeleteMutation = useMutation({
+    mutationFn: (id: number) => deleteUtmLink(id),
+    onSuccess: () => refetchUtmLinks(),
+  });
+
+  const utmStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: number; status: string }) => updateUtmLink(id, { status }),
+    onSuccess: () => refetchUtmLinks(),
   });
 
   useEffect(() => {
@@ -925,6 +1004,352 @@ export default function SettingsScreen() {
           </View>
         )}
       </View>
+
+      {/* UTM Links Section */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>UTM Links</Text>
+        <Text style={styles.sectionHint}>Create, track, and manage UTM-tagged URLs for your marketing campaigns.</Text>
+
+        {/* Naming Guide Toggle */}
+        <Pressable
+          style={styles.utmGuideToggle}
+          onPress={() => setUtmShowGuide(!utmShowGuide)}
+        >
+          <Feather name="book-open" size={14} color={c.tint} />
+          <Text style={styles.utmGuideToggleText}>Naming Convention Guide</Text>
+          <Feather name={utmShowGuide ? "chevron-up" : "chevron-down"} size={14} color={c.tint} />
+        </Pressable>
+
+        {utmShowGuide && (
+          <View style={styles.utmGuidePanel}>
+            <Text style={styles.utmGuideHeading}>Sources</Text>
+            <Text style={styles.utmGuideBody}>
+              {UTM_SOURCES.join(", ")}
+            </Text>
+            <Text style={styles.utmGuideHeading}>Mediums</Text>
+            <Text style={styles.utmGuideBody}>
+              {UTM_MEDIUMS.join(", ")}
+            </Text>
+            <Text style={styles.utmGuideHeading}>Campaign Format</Text>
+            <Text style={styles.utmGuideBody}>
+              {"Use: {year}-{quarter}-{descriptive-name}\nExample: 2026-q2-fundraising-guide"}
+            </Text>
+            <Text style={styles.utmGuideHeading}>Rules</Text>
+            <Text style={styles.utmGuideBody}>
+              {"Always lowercase. Use hyphens for spaces. No special characters."}
+            </Text>
+          </View>
+        )}
+
+        {/* Create / Edit Form Toggle */}
+        <Pressable
+          style={styles.utmAddBtn}
+          onPress={() => {
+            if (utmShowForm && utmEditingId) {
+              setUtmEditingId(null);
+              setUtmDestination("");
+              setUtmSource("");
+              setUtmMedium("");
+              setUtmCampaign("");
+              setUtmContent("");
+              setUtmTerm("");
+              setUtmNotes("");
+            }
+            setUtmShowForm(!utmShowForm);
+          }}
+        >
+          <Feather name={utmShowForm ? "x" : "plus"} size={16} color="#FFF" />
+          <Text style={styles.utmAddBtnText}>{utmShowForm ? "Cancel" : "Create UTM Link"}</Text>
+        </Pressable>
+
+        {/* UTM Form */}
+        {utmShowForm && (
+          <View style={styles.utmForm}>
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Destination URL *</Text>
+              <Text style={styles.hint}>The page you want visitors to land on</Text>
+              <TextInput
+                style={styles.input}
+                value={utmDestination}
+                onChangeText={setUtmDestination}
+                placeholder="https://startupanthology.com/guides/..."
+                placeholderTextColor={c.textMuted}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </View>
+
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Source *</Text>
+              <Text style={styles.hint}>Where traffic comes from</Text>
+              <View style={styles.utmChipRow}>
+                {UTM_SOURCES.map((s) => (
+                  <Pressable
+                    key={s}
+                    style={[styles.utmChip, utmSource === s && styles.utmChipActive]}
+                    onPress={() => setUtmSource(utmSource === s ? "" : s)}
+                  >
+                    <Text style={[styles.utmChipText, utmSource === s && styles.utmChipTextActive]}>{s}</Text>
+                  </Pressable>
+                ))}
+              </View>
+              <TextInput
+                style={[styles.input, { marginTop: spacing.sm }]}
+                value={utmSource}
+                onChangeText={setUtmSource}
+                placeholder="Or type a custom source..."
+                placeholderTextColor={c.textMuted}
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Medium *</Text>
+              <Text style={styles.hint}>Marketing channel type</Text>
+              <View style={styles.utmChipRow}>
+                {UTM_MEDIUMS.map((m) => (
+                  <Pressable
+                    key={m}
+                    style={[styles.utmChip, utmMedium === m && styles.utmChipActive]}
+                    onPress={() => setUtmMedium(utmMedium === m ? "" : m)}
+                  >
+                    <Text style={[styles.utmChipText, utmMedium === m && styles.utmChipTextActive]}>{m}</Text>
+                  </Pressable>
+                ))}
+              </View>
+              <TextInput
+                style={[styles.input, { marginTop: spacing.sm }]}
+                value={utmMedium}
+                onChangeText={setUtmMedium}
+                placeholder="Or type a custom medium..."
+                placeholderTextColor={c.textMuted}
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Campaign *</Text>
+              <Text style={styles.hint}>{"Format: {year}-{quarter}-{name}"}</Text>
+              <TextInput
+                style={styles.input}
+                value={utmCampaign}
+                onChangeText={setUtmCampaign}
+                placeholder="2026-q2-fundraising-guide"
+                placeholderTextColor={c.textMuted}
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Content (optional)</Text>
+              <Text style={styles.hint}>Differentiates similar links — great for A/B testing</Text>
+              <TextInput
+                style={styles.input}
+                value={utmContent}
+                onChangeText={setUtmContent}
+                placeholder="header-cta, ad-version-a, etc."
+                placeholderTextColor={c.textMuted}
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Term (optional)</Text>
+              <Text style={styles.hint}>Paid search keyword</Text>
+              <TextInput
+                style={styles.input}
+                value={utmTerm}
+                onChangeText={setUtmTerm}
+                placeholder="startup-funding"
+                placeholderTextColor={c.textMuted}
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Notes (optional)</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={utmNotes}
+                onChangeText={setUtmNotes}
+                placeholder="Budget, schedule, A/B test details..."
+                placeholderTextColor={c.textMuted}
+                multiline
+              />
+            </View>
+
+            {/* Live URL Preview */}
+            {utmDestination && utmSource && utmMedium && utmCampaign && (
+              <View style={styles.utmPreview}>
+                <Text style={styles.utmPreviewLabel}>Preview URL</Text>
+                <Text style={styles.utmPreviewUrl} selectable>
+                  {`${utmDestination}${utmDestination.includes("?") ? "&" : "?"}utm_source=${utmSource}&utm_medium=${utmMedium}&utm_campaign=${utmCampaign}${utmContent ? `&utm_content=${utmContent}` : ""}${utmTerm ? `&utm_term=${utmTerm}` : ""}`}
+                </Text>
+              </View>
+            )}
+
+            <Pressable
+              style={[styles.saveBtn, { marginHorizontal: 0 }, (!utmDestination || !utmSource || !utmMedium || !utmCampaign || utmCreateMutation.isPending) && styles.saveBtnDisabled]}
+              disabled={!utmDestination || !utmSource || !utmMedium || !utmCampaign || utmCreateMutation.isPending}
+              onPress={() => utmCreateMutation.mutate({
+                destinationUrl: utmDestination,
+                source: utmSource,
+                medium: utmMedium,
+                campaign: utmCampaign,
+                ...(utmContent ? { content: utmContent } : {}),
+                ...(utmTerm ? { term: utmTerm } : {}),
+                ...(utmNotes ? { notes: utmNotes } : {}),
+              })}
+            >
+              {utmCreateMutation.isPending ? (
+                <ActivityIndicator size="small" color="#FFF" />
+              ) : (
+                <>
+                  <Feather name={utmEditingId ? "check" : "link"} size={16} color="#FFF" />
+                  <Text style={styles.saveBtnText}>{utmEditingId ? "Update UTM Link" : "Create UTM Link"}</Text>
+                </>
+              )}
+            </Pressable>
+          </View>
+        )}
+
+        {/* Status Filters */}
+        <View style={[styles.utmChipRow, { marginTop: spacing.lg, marginBottom: spacing.md }]}>
+          {["all", "active", "paused", "completed"].map((s) => (
+            <Pressable
+              key={s}
+              style={[styles.utmChip, utmStatusFilter === s && styles.utmChipActive]}
+              onPress={() => setUtmStatusFilter(s)}
+            >
+              <Text style={[styles.utmChipText, utmStatusFilter === s && styles.utmChipTextActive]}>
+                {s.charAt(0).toUpperCase() + s.slice(1)}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
+        {/* UTM Links List */}
+        {(utmLinks as UtmLinkData[])
+          .filter((link) => utmStatusFilter === "all" || link.status === utmStatusFilter)
+          .map((link) => (
+            <View key={link.id} style={styles.utmCard}>
+              <View style={styles.utmCardHeader}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.utmCardCampaign}>{link.campaign}</Text>
+                  <View style={styles.utmBadgeRow}>
+                    <View style={styles.utmBadge}>
+                      <Text style={styles.utmBadgeText}>{link.source}</Text>
+                    </View>
+                    <View style={styles.utmBadge}>
+                      <Text style={styles.utmBadgeText}>{link.medium}</Text>
+                    </View>
+                    {link.content && (
+                      <View style={styles.utmBadge}>
+                        <Text style={styles.utmBadgeText}>{link.content}</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+                <View style={styles.utmStatusActions}>
+                  {["active", "paused", "completed"].map((s) => (
+                    <Pressable
+                      key={s}
+                      style={[
+                        styles.utmStatusChip,
+                        link.status === s && (s === "active" ? styles.utmStatusActive : s === "paused" ? styles.utmStatusPaused : styles.utmStatusCompleted),
+                      ]}
+                      onPress={() => {
+                        if (link.status !== s) utmStatusMutation.mutate({ id: link.id, status: s });
+                      }}
+                    >
+                      <Text style={[
+                        styles.utmStatusChipText,
+                        link.status === s && (s === "active" ? styles.utmStatusActiveText : s === "paused" ? styles.utmStatusPausedText : styles.utmStatusCompletedText),
+                      ]}>
+                        {s.charAt(0).toUpperCase() + s.slice(1)}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.utmCardBody}>
+                <Text style={styles.utmCardLabel}>Destination</Text>
+                <Text style={styles.utmCardUrl} selectable numberOfLines={1}>{link.destinationUrl}</Text>
+
+                <Text style={[styles.utmCardLabel, { marginTop: spacing.sm }]}>Full UTM URL</Text>
+                <View style={styles.utmCopyRow}>
+                  <Text style={styles.utmCardUrlSmall} selectable numberOfLines={2}>{link.fullUrl}</Text>
+                  <Pressable onPress={() => {
+                    if (Platform.OS === "web") { navigator.clipboard.writeText(link.fullUrl); }
+                  }}>
+                    <Feather name="copy" size={14} color={c.tint} />
+                  </Pressable>
+                </View>
+
+                {link.shortCode && (
+                  <>
+                    <Text style={[styles.utmCardLabel, { marginTop: spacing.sm }]}>Short URL</Text>
+                    <View style={styles.utmCopyRow}>
+                      <Text style={styles.utmCardShortUrl} selectable>
+                        {link.shortUrl || `https://startupanthology.com/go/${link.shortCode}`}
+                      </Text>
+                      <Pressable onPress={() => {
+                        const shortUrl = link.shortUrl || `https://startupanthology.com/go/${link.shortCode}`;
+                        if (Platform.OS === "web") { navigator.clipboard.writeText(shortUrl); }
+                      }}>
+                        <Feather name="copy" size={14} color={c.tint} />
+                      </Pressable>
+                    </View>
+                  </>
+                )}
+
+                {link.notes && (
+                  <>
+                    <Text style={[styles.utmCardLabel, { marginTop: spacing.sm }]}>Notes</Text>
+                    <Text style={styles.utmCardNotes}>{link.notes}</Text>
+                  </>
+                )}
+              </View>
+
+              <View style={styles.utmCardActions}>
+                <Text style={styles.utmCardDate}>
+                  {new Date(link.createdAt).toLocaleDateString()}
+                </Text>
+                <View style={{ flexDirection: "row", gap: spacing.md }}>
+                  <Pressable onPress={() => {
+                    setUtmEditingId(link.id);
+                    setUtmDestination(link.destinationUrl);
+                    setUtmSource(link.source);
+                    setUtmMedium(link.medium);
+                    setUtmCampaign(link.campaign);
+                    setUtmContent(link.content || "");
+                    setUtmTerm(link.term || "");
+                    setUtmNotes(link.notes || "");
+                    setUtmShowForm(true);
+                  }}>
+                    <Feather name="edit-2" size={14} color={c.tint} />
+                  </Pressable>
+                  <Pressable onPress={() => {
+                    Alert.alert("Delete UTM Link", `Delete "${link.campaign}" link?`, [
+                      { text: "Cancel" },
+                      { text: "Delete", style: "destructive", onPress: () => utmDeleteMutation.mutate(link.id) },
+                    ]);
+                  }}>
+                    <Feather name="trash-2" size={14} color={c.error} />
+                  </Pressable>
+                </View>
+              </View>
+            </View>
+          ))}
+
+        {(utmLinks as UtmLinkData[]).filter((link) => utmStatusFilter === "all" || link.status === utmStatusFilter).length === 0 && (
+          <View style={styles.emptyState}>
+            <Feather name="link" size={40} color={c.textMuted} />
+            <Text style={styles.emptyText}>No UTM links yet</Text>
+          </View>
+        )}
+      </View>
     </>
   );
 
@@ -1405,4 +1830,83 @@ const createStyles = (c: ColorPalette) => StyleSheet.create({
     marginLeft: "auto",
   },
   toggleActiveBtnText: { fontFamily: fonts.medium, fontSize: 12 },
+
+  // UTM Links styles
+  utmGuideToggle: {
+    flexDirection: "row", alignItems: "center", gap: spacing.sm,
+    backgroundColor: c.tint + "10", borderRadius: radius.md,
+    paddingHorizontal: spacing.md, paddingVertical: spacing.sm + 2,
+    marginBottom: spacing.md, borderWidth: 1, borderColor: c.tint + "25",
+  },
+  utmGuideToggleText: { fontFamily: fonts.medium, fontSize: 13, color: c.tint, flex: 1 },
+  utmGuidePanel: {
+    backgroundColor: c.surface, borderRadius: radius.md, padding: spacing.lg,
+    marginBottom: spacing.md, borderWidth: 1, borderColor: c.border,
+  },
+  utmGuideHeading: { fontFamily: fonts.semibold, fontSize: 13, color: c.tint, marginTop: spacing.sm, marginBottom: 2 },
+  utmGuideBody: { fontFamily: fonts.regular, fontSize: 12, color: c.textSecondary, lineHeight: 17, marginBottom: spacing.sm },
+  utmAddBtn: {
+    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: spacing.sm,
+    backgroundColor: c.tint, borderRadius: radius.md,
+    paddingVertical: spacing.sm + 2, marginBottom: spacing.md,
+  },
+  utmAddBtnText: { fontFamily: fonts.semibold, fontSize: 14, color: "#FFF" },
+  utmForm: {
+    backgroundColor: c.surface, borderRadius: radius.md, padding: spacing.lg,
+    marginBottom: spacing.md, borderWidth: 1, borderColor: c.border,
+  },
+  utmChipRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs },
+  utmChip: {
+    paddingHorizontal: spacing.sm + 2, paddingVertical: spacing.xs,
+    borderRadius: radius.sm, borderWidth: 1, borderColor: c.border,
+    backgroundColor: c.surface,
+  },
+  utmChipActive: { backgroundColor: c.tint, borderColor: c.tint },
+  utmChipText: { fontFamily: fonts.medium, fontSize: 11, color: c.textSecondary },
+  utmChipTextActive: { color: "#FFF" },
+  utmPreview: {
+    backgroundColor: c.tint + "08", borderRadius: radius.md, padding: spacing.md,
+    marginBottom: spacing.lg, borderWidth: 1, borderColor: c.tint + "20",
+  },
+  utmPreviewLabel: { fontFamily: fonts.semibold, fontSize: 12, color: c.tint, marginBottom: spacing.xs },
+  utmPreviewUrl: { fontFamily: fonts.regular, fontSize: 11, color: c.textSecondary, lineHeight: 16 },
+  utmCard: {
+    backgroundColor: c.surface, borderRadius: radius.md,
+    padding: spacing.lg, marginBottom: spacing.sm, borderWidth: 1, borderColor: c.border,
+  },
+  utmCardHeader: {
+    flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start",
+    marginBottom: spacing.sm,
+  },
+  utmCardCampaign: { fontFamily: fonts.semibold, fontSize: 14, color: c.text, marginBottom: spacing.xs },
+  utmBadgeRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs },
+  utmBadge: {
+    backgroundColor: c.tint + "15", paddingHorizontal: spacing.sm, paddingVertical: 2,
+    borderRadius: radius.sm,
+  },
+  utmBadgeText: { fontFamily: fonts.medium, fontSize: 10, color: c.tint },
+  utmStatusActions: { flexDirection: "row", gap: 2 },
+  utmStatusChip: {
+    paddingHorizontal: spacing.xs + 2, paddingVertical: 2, borderRadius: 4,
+    borderWidth: 1, borderColor: c.border,
+  },
+  utmStatusChipText: { fontFamily: fonts.medium, fontSize: 9, color: c.textMuted },
+  utmStatusActive: { backgroundColor: c.success + "15", borderColor: c.success + "30" },
+  utmStatusActiveText: { color: c.success },
+  utmStatusPaused: { backgroundColor: "#F59E0B15", borderColor: "#F59E0B30" },
+  utmStatusPausedText: { color: "#F59E0B" },
+  utmStatusCompleted: { backgroundColor: c.textMuted + "15", borderColor: c.textMuted + "30" },
+  utmStatusCompletedText: { color: c.textMuted },
+  utmCardBody: { borderTopWidth: 1, borderTopColor: c.border, paddingTop: spacing.sm },
+  utmCardLabel: { fontFamily: fonts.medium, fontSize: 11, color: c.textMuted, marginBottom: 2 },
+  utmCardUrl: { fontFamily: fonts.regular, fontSize: 13, color: c.text },
+  utmCardUrlSmall: { fontFamily: fonts.regular, fontSize: 11, color: c.textSecondary, flex: 1, lineHeight: 16 },
+  utmCardShortUrl: { fontFamily: fonts.medium, fontSize: 13, color: c.tint, flex: 1 },
+  utmCopyRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
+  utmCardNotes: { fontFamily: fonts.regular, fontSize: 12, color: c.textSecondary, fontStyle: "italic" },
+  utmCardActions: {
+    flexDirection: "row", justifyContent: "space-between", alignItems: "center",
+    borderTopWidth: 1, borderTopColor: c.border, paddingTop: spacing.sm, marginTop: spacing.sm,
+  },
+  utmCardDate: { fontFamily: fonts.regular, fontSize: 11, color: c.textMuted },
 });

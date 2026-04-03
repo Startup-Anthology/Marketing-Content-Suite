@@ -12,6 +12,7 @@ import interviewPrepsRouter from "./interview-preps";
 import googleCalendarRouter from "./google-calendar";
 import socialAccountsRouter from "./social-accounts";
 import adminRouter from "./admin";
+import utmLinksRouter from "./utm-links";
 
 const router: IRouter = Router();
 
@@ -28,5 +29,6 @@ router.use(interviewPrepsRouter);
 router.use(googleCalendarRouter);
 router.use(socialAccountsRouter);
 router.use(adminRouter);
+router.use(utmLinksRouter);
 
 export default router;

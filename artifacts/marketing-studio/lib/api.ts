@@ -356,3 +356,34 @@ export async function updateAdminUser(id: number, data: { role?: string; isActiv
     body: JSON.stringify(data),
   });
 }
+
+// UTM Links
+export async function fetchUtmLinks() {
+  return apiFetch("/utm-links");
+}
+
+export async function createUtmLink(data: {
+  destinationUrl: string;
+  source: string;
+  medium: string;
+  campaign: string;
+  content?: string;
+  term?: string;
+  notes?: string;
+}) {
+  return apiFetch("/utm-links", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateUtmLink(id: number, data: Record<string, unknown>) {
+  return apiFetch(`/utm-links/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteUtmLink(id: number) {
+  return apiFetch(`/utm-links/${id}`, { method: "DELETE" });
+}
