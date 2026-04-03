@@ -1,5 +1,6 @@
 export * from "./users";
 export * from "./social_accounts";
+export * from "./utm_links";
 export * from "./content_pieces";
 export * from "./storyboards";
 export * from "./research_notes";
